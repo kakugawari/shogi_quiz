@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>しょうぎクイズ道場</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&family=M+PLUS+Rounded+1c:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --indigo:#22395e;        /* 藍 */
+  --indigo-deep:#182a47;
+  --indigo-panel:#2d4a75;
+  --wood:#f0cd8b;          /* 駒の木 */
+  --wood-dark:#d9a85c;
+  --wood-line:#7a4f26;
+  --shu:#d64533;           /* 朱 (正解の◯) */
+  --ao:#3b6fd4;            /* 青 (✕) */
+  --cream:#fff6e3;
+  --take:#6fbe8f;          /* 若竹 */
+  --radius:18px;
+  font-size:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  font-family:"M PLUS Rounded 1c","Hiragino Maru Gothic ProN","BIZ UDGothic",sans-serif;
+  font-weight:700;
+  color:var(--cream);
+  background:
+    radial-gradient(circle at 12px 12px, rgba(255,246,227,.05) 1.5px, transparent 1.6px),
+    var(--indigo);
+  background-size:34px 34px, auto;
+  display:flex;justify-content:center;
+  min-height:100dvh;
+}
+#app{width:100%;max-width:520px;padding:16px 14px 28px;display:flex;flex-direction:column}
+.screen{display:none;flex-direction:column;gap:16px;animation:pop-in .35s ease}
+.screen.active{display:flex}
+@keyframes pop-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* ---------- タイトル ---------- */
+#screen-title{align-items:center;text-align:center;padding-top:24px}
+.logo-koma{width:120px;height:126px;filter:drop-shadow(0 6px 0 rgba(0,0,0,.3));animation:wobble 3s ease-in-out infinite}
+@keyframes wobble{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
+h1{
+  font-family:"Mochiy Pop One","M PLUS Rounded 1c",sans-serif;
+  font-size:2rem;line-height:1.35;letter-spacing:.06em;
+  text-shadow:0 3px 0 var(--indigo-deep);
+}
+h1 .small{display:block;font-size:.95rem;color:var(--wood);letter-spacing:.3em}
+.tagline{font-size:.9rem;color:#cfe0ff;font-weight:700}
+.mode-list{width:100%;display:flex;flex-direction:column;gap:14px;margin-top:8px}
+.mode-btn{
+  border:none;cursor:pointer;text-align:left;
+  background:linear-gradient(180deg,var(--indigo-panel),#26406a);
+  border:3px solid #4a6ea6;border-radius:var(--radius);
+  padding:16px 18px;color:var(--cream);
+  display:flex;align-items:center;gap:14px;
+  box-shadow:0 5px 0 var(--indigo-deep);
+  transition:transform .1s;
+}
+.mode-btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--indigo-deep)}
+.mode-btn .icon{font-size:2rem;flex:0 0 auto}
+.mode-btn .name{font-family:"Mochiy Pop One",sans-serif;font-size:1.15rem}
+.mode-btn .desc{font-size:.78rem;color:#bcd2f5;font-weight:500;margin-top:2px}
+
+/* ---------- クイズ ---------- */
+.hud{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.hud .q-count{font-family:"Mochiy Pop One",sans-serif;font-size:1.05rem;color:var(--wood)}
+.hud .score{background:var(--indigo-deep);border-radius:999px;padding:6px 14px;font-size:.85rem}
+.hud .score b{color:var(--wood);font-size:1.05rem}
+.progress{display:flex;gap:5px;justify-content:center}
+.progress svg{width:22px;height:24px;opacity:.35;transition:opacity .2s}
+.progress svg.done{opacity:1}
+.progress svg.now{opacity:1;animation:bounce .7s infinite alternate}
+@keyframes bounce{from{transform:translateY(0)}to{transform:translateY(-4px)}}
+
+.q-card{
+  background:var(--indigo-panel);
+  border:3px solid #4a6ea6;border-radius:var(--radius);
+  padding:16px 14px;display:flex;flex-direction:column;align-items:center;gap:12px;
+  box-shadow:0 5px 0 var(--indigo-deep);
+}
+.q-text{font-size:1.02rem;line-height:1.75;text-align:center}
+.q-text ruby rt{font-size:.55em;color:var(--wood)}
+.board-wrap{filter:drop-shadow(0 4px 0 rgba(0,0,0,.25))}
+
+/* 駒型ボタン（囲いクイズ） */
+.koma-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.koma-choice{position:relative;border:none;background:none;cursor:pointer;padding:0;
+  filter:drop-shadow(0 5px 0 rgba(0,0,0,.35));transition:transform .1s}
+.koma-choice:active{transform:translateY(3px)}
+.koma-choice .shape{
+  clip-path:polygon(50% 0%, 85% 16%, 96% 100%, 4% 100%, 15% 16%);
+  background:linear-gradient(165deg,#f7dfae,var(--wood) 55%,var(--wood-dark));
+  min-height:118px;display:flex;flex-direction:column;justify-content:center;align-items:center;
+  padding:26px 10px 12px;color:#4a2c10;
+}
+.koma-choice .kana{font-size:.68rem;font-weight:800;color:#7a4f26}
+.koma-choice .kanji{font-family:"Mochiy Pop One",sans-serif;font-size:1.25rem;letter-spacing:.03em}
+.koma-choice.correct .shape{background:linear-gradient(165deg,#ffe9a8,#f5c05a)}
+.koma-choice.wrong .shape{filter:grayscale(.7);opacity:.55}
+.koma-choice:disabled{cursor:default}
+
+/* 通常ボタン（知識クイズ） */
+.pill-list{display:flex;flex-direction:column;gap:11px}
+.pill{
+  border:3px solid #4a6ea6;border-radius:999px;cursor:pointer;
+  background:var(--indigo-deep);color:var(--cream);
+  font-family:inherit;font-weight:700;font-size:1rem;line-height:1.5;
+  padding:13px 18px;text-align:center;box-shadow:0 4px 0 #0f1d33;transition:transform .1s;
+}
+.pill:active{transform:translateY(3px);box-shadow:0 1px 0 #0f1d33}
+.pill.correct{background:var(--shu);border-color:#ff8a72}
+.pill.wrong{opacity:.45}
+.pill:disabled{cursor:default}
+
+/* 判定オーバーレイ */
+#judge{position:fixed;inset:0;display:none;justify-content:center;align-items:flex-end;z-index:50}
+#judge.show{display:flex}
+#judge .dim{position:absolute;inset:0;background:rgba(10,18,33,.55)}
+.judge-card{
+  position:relative;width:100%;max-width:520px;
+  background:var(--cream);color:#33241a;border-radius:26px 26px 0 0;
+  padding:22px 20px 26px;display:flex;flex-direction:column;gap:12px;align-items:center;
+  animation:slide-up .3s ease;
+}
+@keyframes slide-up{from{transform:translateY(60px);opacity:0}to{transform:none;opacity:1}}
+.judge-mark{font-family:"Mochiy Pop One",sans-serif;font-size:2.1rem;display:flex;align-items:center;gap:12px}
+.judge-mark .mark{font-size:3.4rem;line-height:1;animation:stamp .35s cubic-bezier(.2,2,.4,1)}
+@keyframes stamp{from{transform:scale(2.2);opacity:0}to{transform:scale(1);opacity:1}}
+.judge-mark.ok{color:var(--shu)}
+.judge-mark.ng{color:var(--ao)}
+.judge-answer{font-size:1rem;background:#fbe8c8;border-radius:12px;padding:8px 16px;color:#6b3f16}
+.judge-expl{font-size:.92rem;font-weight:500;line-height:1.8;color:#4a3728}
+.next-btn{
+  border:none;cursor:pointer;border-radius:999px;
+  font-family:"Mochiy Pop One",sans-serif;font-size:1.1rem;color:#fff;
+  background:var(--shu);padding:13px 60px;box-shadow:0 4px 0 #9c2f21;transition:transform .1s;
+}
+.next-btn:active{transform:translateY(3px);box-shadow:0 1px 0 #9c2f21}
+
+/* ---------- 結果 ---------- */
+#screen-result{align-items:center;text-align:center;padding-top:20px}
+.result-card{
+  width:100%;background:var(--indigo-panel);border:3px solid #4a6ea6;border-radius:var(--radius);
+  padding:26px 18px;display:flex;flex-direction:column;gap:12px;align-items:center;
+  box-shadow:0 5px 0 var(--indigo-deep);
+}
+.rank-name{font-family:"Mochiy Pop One",sans-serif;font-size:1.7rem;color:var(--wood)}
+.result-score{font-size:1.1rem}
+.result-score b{font-size:2.2rem;color:var(--cream)}
+.result-msg{font-size:.92rem;font-weight:500;color:#cfe0ff;line-height:1.8}
+.stars{font-size:1.7rem;letter-spacing:.15em}
+.result-btns{display:flex;flex-direction:column;gap:12px;width:100%;margin-top:6px}
+.big-btn{
+  border:none;cursor:pointer;border-radius:999px;padding:14px;
+  font-family:"Mochiy Pop One",sans-serif;font-size:1.05rem;color:#fff;
+  background:var(--shu);box-shadow:0 4px 0 #9c2f21;transition:transform .1s;
+}
+.big-btn.alt{background:var(--indigo-deep);box-shadow:0 4px 0 #0f1d33;border:2px solid #4a6ea6}
+.big-btn:active{transform:translateY(3px);box-shadow:none}
+
+/* 難易度バッジ */
+.diff-badge{
+  display:inline-block;background:var(--indigo-deep);color:var(--wood);
+  border-radius:999px;padding:3px 14px;font-size:.72rem;margin-bottom:6px;
+}
+
+/* ---------- 囲いずかん ---------- */
+.back-btn{
+  border:2px solid #4a6ea6;border-radius:999px;background:var(--indigo-deep);
+  color:var(--cream);font-family:inherit;font-weight:700;font-size:.85rem;
+  padding:7px 16px;cursor:pointer;
+}
+#zukan-list{display:flex;flex-direction:column;gap:14px}
+.zukan-fam{
+  font-family:"Mochiy Pop One",sans-serif;font-size:1.05rem;color:var(--wood);
+  margin-top:10px;display:flex;align-items:center;gap:8px;
+}
+.zukan-fam::after{content:"";flex:1;height:2px;background:#4a6ea6;border-radius:2px}
+.zukan-card{
+  background:var(--indigo-panel);border:3px solid #4a6ea6;border-radius:var(--radius);
+  padding:14px;display:flex;flex-direction:column;gap:8px;align-items:center;
+  box-shadow:0 4px 0 var(--indigo-deep);
+}
+.zukan-card .z-name{font-family:"Mochiy Pop One",sans-serif;font-size:1.15rem;text-align:center}
+.zukan-card .z-kana{font-size:.72rem;color:#bcd2f5}
+.zukan-card .z-stars{font-size:.8rem;color:var(--wood)}
+.zukan-card .z-expl{font-size:.85rem;font-weight:500;line-height:1.75;color:#e8eefb}
+.zukan-note{font-size:.78rem;font-weight:500;color:#bcd2f5;line-height:1.7;text-align:center}
+.anim-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center}
+.anim-btn{
+  border:none;cursor:pointer;border-radius:999px;
+  font-family:"Mochiy Pop One",sans-serif;font-size:.85rem;color:#fff;
+  background:var(--shu);padding:9px 18px;box-shadow:0 3px 0 #9c2f21;transition:transform .1s;
+}
+.anim-btn:active{transform:translateY(2px);box-shadow:0 1px 0 #9c2f21}
+.anim-btn:disabled{opacity:.55;cursor:default}
+.anim-cap{
+  font-family:"Mochiy Pop One",sans-serif;font-size:.95rem;color:var(--wood);
+  min-height:1.4em;
+}
+.pc{transition:transform .5s ease, opacity .5s ease}
+
+/* 紙ふぶき（駒ふぶき） */
+.confetti{position:fixed;top:-40px;font-size:1.4rem;z-index:5;animation:fall linear forwards;pointer-events:none}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg);opacity:.8}}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation:none !important;transition:none !important}
+}
+button:focus-visible{outline:3px solid #ffd97a;outline-offset:2px}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- タイトル -->
+  <section class="screen active" id="screen-title">
+    <svg class="logo-koma" viewBox="0 0 100 105" aria-hidden="true">
+      <defs>
+        <linearGradient id="wood" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#f7dfae"/><stop offset=".6" stop-color="#f0cd8b"/><stop offset="1" stop-color="#d9a85c"/>
+        </linearGradient>
+      </defs>
+      <polygon points="50,3 85,20 95,102 5,102 15,20" fill="url(#wood)" stroke="#7a4f26" stroke-width="3" stroke-linejoin="round"/>
+      <text x="50" y="72" text-anchor="middle" font-size="46" font-weight="bold" fill="#3a2410" font-family="serif">王</text>
+    </svg>
+    <h1>しょうぎクイズ道場<span class="small">〜 かこい と じょうせき 〜</span></h1>
+    <p class="tagline">クイズにこたえて 名人（めいじん）をめざそう！</p>
+    <div class="mode-list">
+      <button class="mode-btn" data-mode="castle">
+        <span class="icon">🏯</span>
+        <span><span class="name">囲（かこ）いクイズ</span><br>
+        <span class="desc">盤（ばん）の形を見て、囲いの名前を当てよう！（全8問）</span></span>
+      </button>
+      <button class="mode-btn" data-mode="knowledge">
+        <span class="icon">📖</span>
+        <span><span class="name">定跡（じょうせき）・格言（かくげん）クイズ</span><br>
+        <span class="desc">戦法や将棋のことわざのもんだい！（全10問）</span></span>
+      </button>
+      <button class="mode-btn" data-mode="mix">
+        <span class="icon">🔥</span>
+        <span><span class="name">ミックスたいきょく</span><br>
+        <span class="desc">ぜんぶまぜて実力チェック！（全10問）</span></span>
+      </button>
+      <button class="mode-btn zukan-btn" id="btn-zukan">
+        <span class="icon">📚</span>
+        <span><span class="name">囲（かこ）いずかん</span><br>
+        <span class="desc">27種類の囲いをぜんぶ見られるよ！おぼえてからクイズにちょうせん</span></span>
+      </button>
+    </div>
+  </section>
+
+  <!-- 囲いずかん -->
+  <section class="screen" id="screen-zukan">
+    <div class="hud">
+      <span class="q-count">囲いずかん</span>
+      <button class="back-btn" id="btn-zukan-back">◀ もどる</button>
+    </div>
+    <div id="zukan-list"></div>
+  </section>
+
+  <!-- クイズ -->
+  <section class="screen" id="screen-quiz">
+    <div class="hud">
+      <span class="q-count" id="q-count">第1問</span>
+      <span class="score">せいかい <b id="score-now">0</b></span>
+    </div>
+    <div class="progress" id="progress"></div>
+    <div class="q-card">
+      <p class="q-text" id="q-text"></p>
+      <div class="board-wrap" id="board-wrap"></div>
+    </div>
+    <div id="choices"></div>
+  </section>
+
+  <!-- 結果 -->
+  <section class="screen" id="screen-result">
+    <div class="result-card">
+      <div class="stars" id="stars"></div>
+      <div class="rank-name" id="rank-name"></div>
+      <div class="result-score"><b id="score-final">0</b> ／ <span id="score-total">10</span> 問せいかい！</div>
+      <p class="result-msg" id="result-msg"></p>
+      <div class="result-btns">
+        <button class="big-btn" id="btn-retry">もういちど ちょうせん！</button>
+        <button class="big-btn alt" id="btn-home">モードをえらびなおす</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- 判定 -->
+<div id="judge">
+  <div class="dim"></div>
+  <div class="judge-card">
+    <div class="judge-mark" id="judge-mark"><span class="mark">◯</span><span id="judge-word">せいかい！</span></div>
+    <div class="judge-answer" id="judge-answer"></div>
+    <p class="judge-expl" id="judge-expl"></p>
+    <button class="next-btn" id="btn-next">つぎへ ▶</button>
+  </div>
+</div>
+
+<script>
+/* ================= データ ================= */
+// 囲い：先手側の駒 (f=筋 1〜9, r=段 1〜9)
+// lv: むずかしさ 1〜3 / fam: 系統（出題のひっかけ・図鑑の分類に使用）
+const CASTLES = [
+  // --- 矢倉のなかま ---
+  { name:'金矢倉', kana:'きんやぐら', lv:1, fam:'yagura', crop:'left',
+    pieces:[['香',9,9],['桂',8,9],['玉',8,8],['金',7,8],['銀',7,7],['金',6,7],['歩',9,7],['歩',8,7],['歩',7,6],['歩',6,6],['歩',5,6]],
+    expl:'矢倉（やぐら）の基本形。上からの攻めにとても強い、囲いの王様！おたがい居飛車の戦いでよく登場するよ。'},
+  { name:'銀矢倉', kana:'ぎんやぐら', lv:2, fam:'yagura', crop:'left',
+    pieces:[['香',9,9],['桂',8,9],['玉',8,8],['金',7,8],['銀',7,7],['銀',6,7],['歩',9,7],['歩',8,7],['歩',7,6],['歩',6,6],['歩',5,6]],
+    expl:'金矢倉とそっくりだけど、6七にいるのが金じゃなくて銀！駒の連結がよく、角交換の将棋で活躍するよ。'},
+  { name:'片矢倉', kana:'かたやぐら', lv:3, fam:'yagura', crop:'left',
+    pieces:[['香',9,9],['桂',8,9],['玉',7,8],['金',6,8],['銀',7,7],['金',6,7],['歩',9,7],['歩',8,7],['歩',7,6],['歩',6,6],['歩',5,7]],
+    expl:'玉が7八にいる矢倉。江戸時代の天才・天野宗歩（あまのそうほ）が愛用したから「天野矢倉」ともいうよ。角の打ちこみに強い！'},
+  { name:'総矢倉', kana:'そうやぐら', lv:2, fam:'yagura', crop:'left',
+    pieces:[['香',9,9],['桂',8,9],['玉',8,8],['金',7,8],['銀',7,7],['金',6,7],['銀',5,7],['歩',9,7],['歩',8,7],['歩',7,6],['歩',6,6],['歩',5,6]],
+    expl:'金矢倉に右の銀もくっつけた、金銀4枚の矢倉。守りはとても手厚いけど、そのぶん攻めの駒が減っちゃうよ。'},
+  { name:'土居矢倉', kana:'どいやぐら', lv:3, fam:'yagura', crop:'left',
+    pieces:[['香',9,9],['桂',8,9],['玉',7,8],['銀',7,7],['金',6,7],['金',5,8],['歩',9,7],['歩',8,7],['歩',7,6],['歩',6,6],['歩',5,7]],
+    expl:'土居市太郎（どいいちたろう）名誉名人の矢倉。昔の形だけどバランスがよくて、AI時代にまた大流行したよ。'},
+  { name:'矢倉穴熊', kana:'やぐらあなぐま', lv:3, fam:'ana', crop:'left',
+    pieces:[['玉',9,9],['香',9,8],['桂',8,9],['銀',7,7],['金',7,8],['金',6,7],['歩',9,7],['歩',8,7],['歩',7,6],['歩',6,6],['歩',5,7]],
+    expl:'矢倉からさらに手数をかけて、玉が9九へもぐった形。相居飛車の戦いで使う穴熊だよ。'},
+  { name:'カニ囲い', kana:'かにがこい', lv:1, fam:'yagura', crop:'left',
+    pieces:[['香',9,9],['桂',8,9],['玉',6,9],['金',7,8],['銀',6,8],['金',5,8],['歩',9,7],['歩',8,7],['歩',7,6],['歩',6,6],['歩',5,6]],
+    expl:'2枚の金がカニのハサミみたい！横にちょこちょこ動いて組めて、ここから発展して矢倉になることが多いよ。'},
+  { name:'雁木', kana:'がんぎ', lv:2, fam:'yagura', crop:'left',
+    pieces:[['香',9,9],['桂',8,9],['玉',6,9],['金',7,8],['銀',6,7],['銀',5,7],['金',5,8],['歩',9,7],['歩',8,7],['歩',7,6],['歩',6,6],['歩',5,6]],
+    expl:'金銀が階段みたいにナナメにならぶ囲い。「雁木」は船着き場の階段のこと。プロの間でも大流行したよ。'},
+  { name:'ボナンザ囲い', kana:'ぼなんざがこい', lv:3, fam:'yagura', crop:'left',
+    pieces:[['香',9,9],['桂',8,9],['玉',7,8],['銀',7,7],['金',6,8],['金',5,8],['歩',9,7],['歩',8,7],['歩',7,6],['歩',6,7],['歩',5,7]],
+    expl:'将棋ソフト「ボナンザ」が好んで使った形。片矢倉のなかまで、横からの攻めに強くバランスがいいよ。'},
+  // --- 美濃のなかま ---
+  { name:'美濃囲い', kana:'みのがこい', lv:1, fam:'mino', crop:'right',
+    pieces:[['香',1,9],['桂',2,9],['玉',2,8],['銀',3,8],['金',4,9],['金',5,8],['歩',1,7],['歩',2,7],['歩',3,7],['歩',4,7],['歩',5,7]],
+    expl:'振り飛車の相棒！少ない手数で組めて、横からの攻めに強い。弱点は端攻めと、玉のななめ上（コビン）だよ。'},
+  { name:'片美濃', kana:'かたみの', lv:1, fam:'mino', crop:'right',
+    pieces:[['香',1,9],['桂',2,9],['玉',2,8],['銀',3,8],['金',4,9],['歩',1,7],['歩',2,7],['歩',3,7],['歩',4,7],['歩',5,7]],
+    expl:'美濃囲いになる一歩手前の形。中飛車ではこの形のまま戦うことも多いよ。'},
+  { name:'高美濃', kana:'たかみの', lv:2, fam:'mino', crop:'right',
+    pieces:[['香',1,9],['桂',2,9],['玉',2,8],['銀',3,8],['金',4,9],['金',4,7],['歩',1,7],['歩',2,7],['歩',3,6],['歩',4,6],['歩',5,6]],
+    expl:'美濃囲いの金が4七に上がった形。横の強さはそのままで、上からの攻めにも強くなったよ。'},
+  { name:'銀冠', kana:'ぎんかんむり', lv:2, fam:'mino', crop:'right',
+    pieces:[['香',1,9],['桂',2,9],['玉',2,8],['銀',2,7],['金',3,8],['金',4,7],['歩',1,7],['歩',2,6],['歩',3,6],['歩',4,6],['歩',5,6]],
+    expl:'玉の頭に銀のかんむり！高美濃からさらにパワーアップして、上にも端にも強い、広くてねばり強い囲いだよ。'},
+  { name:'ダイヤモンド美濃', kana:'だいやもんどみの', lv:2, fam:'mino', crop:'right',
+    pieces:[['香',1,9],['桂',2,9],['玉',2,8],['銀',3,8],['銀',4,7],['金',4,9],['金',5,8],['歩',1,7],['歩',2,7],['歩',3,7],['歩',4,6],['歩',5,6]],
+    expl:'金銀4枚がダイヤモンドの形にキラリ✨ 連結バツグンで、ものすごくかたい美濃囲いの完成形！'},
+  { name:'木村美濃', kana:'きむらみの', lv:3, fam:'mino', crop:'right',
+    pieces:[['香',1,9],['桂',2,9],['玉',2,8],['金',3,8],['銀',4,7],['歩',1,7],['歩',2,7],['歩',3,7],['歩',4,6],['歩',5,7]],
+    expl:'木村義雄（きむらよしお）十四世名人が使った囲い。ひねり飛車などで登場して、玉の逃げ道が広いのが長所だよ。'},
+  { name:'振り飛車穴熊', kana:'ふりびしゃあなぐま', lv:2, fam:'anaR', crop:'right',
+    pieces:[['玉',1,9],['香',1,8],['桂',2,9],['銀',2,8],['金',3,9],['金',3,8],['歩',1,7],['歩',2,7],['歩',3,7],['歩',4,7],['歩',5,7]],
+    expl:'振り飛車の玉が1九のすみっこへ！クマが穴ごもりするみたいだから穴熊。王手がかからなくて超がんじょう！'},
+  { name:'銀冠穴熊', kana:'ぎんかんあなぐま', lv:3, fam:'anaR', crop:'right',
+    pieces:[['玉',1,9],['香',1,8],['桂',2,9],['銀',2,7],['金',3,8],['金',4,7],['歩',1,7],['歩',2,6],['歩',3,6],['歩',4,6],['歩',5,6]],
+    expl:'銀冠から穴熊にもぐった、かたさと遠さのハイブリッド！端攻めにも強い、ぜいたくな囲いだよ。'},
+  { name:'金無双', kana:'きんむそう', lv:2, fam:'mino', crop:'right',
+    pieces:[['香',1,9],['桂',2,9],['玉',3,8],['銀',2,8],['金',4,8],['金',5,8],['歩',1,7],['歩',2,7],['歩',3,7],['歩',4,7],['歩',5,7]],
+    expl:'金が2枚横にならぶから「二枚金（にまいきん）」ともいう。おたがい振り飛車（相振り飛車）の定番の囲いだよ。'},
+  // --- 穴熊のなかま（左側） ---
+  { name:'居飛車穴熊', kana:'いびしゃあなぐま', lv:1, fam:'ana', crop:'left',
+    pieces:[['玉',9,9],['香',9,8],['桂',8,9],['銀',8,8],['金',7,9],['金',7,8],['歩',9,7],['歩',8,7],['歩',7,6],['歩',6,6],['歩',5,7]],
+    expl:'玉が9九の穴にもぐる超がんじょうな囲い。王手がぜんぜんかからない！振り飛車の天敵といわれるよ。'},
+  { name:'松尾流穴熊', kana:'まつおりゅうあなぐま', lv:3, fam:'ana', crop:'left',
+    pieces:[['玉',9,9],['香',9,8],['桂',8,9],['銀',8,8],['銀',7,9],['金',7,8],['金',6,7],['歩',9,7],['歩',8,7],['歩',7,6],['歩',6,6],['歩',5,6]],
+    expl:'銀が7九まで来た金銀4枚の穴熊。「組めたら勝率8割」といわれるほど強力！松尾歩八段の得意技だよ。'},
+  { name:'ビッグ4', kana:'びっぐふぉー', lv:3, fam:'ana', crop:'left',
+    pieces:[['玉',9,9],['香',9,8],['桂',8,9],['銀',8,8],['銀',7,7],['金',7,8],['金',7,9],['歩',9,7],['歩',8,7],['歩',7,6],['歩',6,6],['歩',5,6]],
+    expl:'金銀4枚のがっちりスクラム！史上最強ともいわれる穴熊で、ここまで組めたらほぼ作戦勝ちだよ。'},
+  { name:'ミレニアム', kana:'みれにあむ', lv:3, fam:'ana', crop:'left',
+    pieces:[['香',9,9],['玉',8,9],['銀',8,8],['桂',7,7],['金',7,8],['金',6,9],['歩',9,7],['歩',8,7],['歩',7,6],['歩',6,6],['歩',5,7]],
+    expl:'桂馬が7七にはねて、玉が8九に入る囲い。西暦2000年ごろに流行したからミレニアム。「トーチカ」ともよばれるよ。'},
+  // --- 舟囲いのなかま ---
+  { name:'舟囲い', kana:'ふながこい', lv:1, fam:'fune', crop:'left',
+    pieces:[['香',9,9],['桂',8,9],['玉',7,8],['銀',7,9],['金',6,9],['金',5,8],['歩',9,7],['歩',8,7],['歩',7,6],['歩',6,7],['歩',5,7]],
+    expl:'船みたいな形だから舟囲い。すぐ組めるから、振り飛車あいてに急戦をしかけるときの基本になるよ。'},
+  { name:'箱入り娘', kana:'はこいりむすめ', lv:2, fam:'fune', crop:'left',
+    pieces:[['香',9,9],['桂',8,9],['玉',7,8],['銀',7,9],['金',6,9],['金',6,8],['歩',9,7],['歩',8,7],['歩',7,6],['歩',6,7],['歩',5,7]],
+    expl:'舟囲いの金が1つ左に寄った形。玉が箱の中に大事にしまわれているみたいだから、この名前がついたよ。'},
+  { name:'elmo囲い', kana:'えるもがこい', lv:2, fam:'fune', crop:'left',
+    pieces:[['香',9,9],['桂',8,9],['玉',7,8],['金',7,9],['銀',6,8],['金',5,9],['歩',9,7],['歩',8,7],['歩',7,6],['歩',6,7],['歩',5,7]],
+    expl:'将棋AI「elmo（エルモ）」が発見した新しい囲い。シンプルなのにバランスばつぐんで、プロ棋士も採用したよ。'},
+  { name:'左美濃', kana:'ひだりみの', lv:2, fam:'fune', crop:'left',
+    pieces:[['香',9,9],['桂',8,9],['玉',8,8],['銀',7,8],['金',6,9],['金',5,8],['歩',9,7],['歩',8,7],['歩',7,6],['歩',6,7],['歩',5,7]],
+    expl:'美濃囲いを左側で組んだ形。居飛車が振り飛車と戦うときに使う、横からの攻めに強い囲いだよ。'},
+  { name:'天守閣美濃', kana:'てんしゅかくみの', lv:3, fam:'fune', crop:'left',
+    pieces:[['香',9,9],['桂',8,9],['玉',8,7],['角',8,8],['銀',7,8],['金',6,9],['金',5,8],['歩',9,7],['歩',8,6],['歩',7,6],['歩',6,7],['歩',5,7]],
+    expl:'玉がお城の天守閣みたいに3段目へ！相手の角のねらいから玉をかわす、アイデアたっぷりの囲いだよ。'}
+];
+
+/* ================= 組み上がり手順アニメ用データ =================
+   1手 = [駒, 元の筋, 元の段, 先の筋, 先の段]／元が 0,0 の駒は表示エリアの外からやってくる駒
+   （飛車・角など囲いに関係ない駒は省略。天守閣美濃の角だけ特別に表示） */
+const INIT_L = [['香',9,9],['桂',8,9],['銀',7,9],['金',6,9],['玉',5,9],['歩',9,7],['歩',8,7],['歩',7,7],['歩',6,7],['歩',5,7]];
+const INIT_R = [['香',1,9],['桂',2,9],['銀',3,9],['金',4,9],['玉',5,9],['歩',1,7],['歩',2,7],['歩',3,7],['歩',4,7],['歩',5,7]];
+const EXTRA_INIT = { '天守閣美濃':[['角',8,8]] };
+const MOVES = {
+ '金矢倉':[['歩',7,7,7,6],['銀',7,9,6,8],['歩',6,7,6,6],['銀',6,8,7,7],['金',6,9,7,8],['金',0,0,5,8],['金',5,8,6,7],['玉',5,9,6,9],['玉',6,9,7,9],['玉',7,9,8,8],['歩',5,7,5,6]],
+ '銀矢倉':[['歩',7,7,7,6],['歩',6,7,6,6],['銀',7,9,6,8],['銀',6,8,7,7],['金',6,9,7,8],['玉',5,9,6,9],['玉',6,9,7,9],['玉',7,9,8,8],['歩',5,7,5,6],['銀',0,0,6,8],['銀',6,8,6,7]],
+ '片矢倉':[['歩',7,7,7,6],['歩',6,7,6,6],['銀',7,9,6,8],['銀',6,8,7,7],['玉',5,9,6,8],['玉',6,8,7,8],['金',6,9,6,8],['金',0,0,5,8],['金',5,8,6,7]],
+ '総矢倉':[['歩',7,7,7,6],['銀',7,9,6,8],['歩',6,7,6,6],['銀',6,8,7,7],['金',6,9,7,8],['金',0,0,5,8],['金',5,8,6,7],['玉',5,9,6,9],['玉',6,9,7,9],['玉',7,9,8,8],['歩',5,7,5,6],['銀',0,0,5,7]],
+ '土居矢倉':[['歩',7,7,7,6],['歩',6,7,6,6],['銀',7,9,6,8],['銀',6,8,7,7],['金',6,9,6,8],['金',6,8,6,7],['玉',5,9,6,9],['玉',6,9,7,8],['金',0,0,5,8]],
+ '矢倉穴熊':[['歩',7,7,7,6],['銀',7,9,6,8],['歩',6,7,6,6],['銀',6,8,7,7],['金',6,9,7,8],['金',0,0,5,8],['金',5,8,6,7],['玉',5,9,6,9],['玉',6,9,7,9],['玉',7,9,8,8],['香',9,9,9,8],['玉',8,8,9,9]],
+ 'カニ囲い':[['歩',7,7,7,6],['歩',6,7,6,6],['銀',7,9,6,8],['金',6,9,7,8],['玉',5,9,6,9],['金',0,0,5,8],['歩',5,7,5,6]],
+ '雁木':[['歩',7,7,7,6],['歩',6,7,6,6],['銀',7,9,6,8],['銀',6,8,6,7],['金',6,9,7,8],['玉',5,9,6,9],['歩',5,7,5,6],['銀',0,0,5,7],['金',0,0,5,8]],
+ 'ボナンザ囲い':[['歩',7,7,7,6],['銀',7,9,6,8],['銀',6,8,7,7],['金',6,9,6,8],['玉',5,9,6,9],['玉',6,9,7,8],['金',0,0,5,8]],
+ '居飛車穴熊':[['歩',7,7,7,6],['歩',6,7,6,6],['玉',5,9,6,8],['玉',6,8,7,8],['香',9,9,9,8],['玉',7,8,8,8],['玉',8,8,9,9],['銀',7,9,8,8],['金',6,9,7,9],['金',0,0,5,8],['金',5,8,6,7],['金',6,7,7,8]],
+ '松尾流穴熊':[['歩',7,7,7,6],['歩',6,7,6,6],['玉',5,9,6,8],['玉',6,8,7,8],['香',9,9,9,8],['玉',7,8,8,8],['玉',8,8,9,9],['銀',7,9,8,8],['金',6,9,7,8],['金',0,0,5,8],['金',5,8,6,7],['歩',5,7,5,6],['銀',0,0,5,7],['銀',5,7,6,8],['銀',6,8,7,9]],
+ 'ビッグ4':[['歩',7,7,7,6],['歩',6,7,6,6],['歩',5,7,5,6],['玉',5,9,6,8],['玉',6,8,7,8],['香',9,9,9,8],['玉',7,8,8,8],['玉',8,8,9,9],['銀',7,9,8,8],['金',6,9,7,9],['金',0,0,5,8],['金',5,8,6,7],['金',6,7,7,8],['銀',0,0,5,7],['銀',5,7,6,8],['銀',6,8,7,7]],
+ 'ミレニアム':[['歩',7,7,7,6],['歩',6,7,6,6],['桂',8,9,7,7],['銀',7,9,8,8],['玉',5,9,6,8],['玉',6,8,7,9],['玉',7,9,8,9],['金',0,0,5,8],['金',5,8,6,7],['金',6,7,7,8]],
+ '舟囲い':[['歩',7,7,7,6],['玉',5,9,6,8],['玉',6,8,7,8],['金',0,0,5,8]],
+ '箱入り娘':[['歩',7,7,7,6],['玉',5,9,6,8],['玉',6,8,7,8],['金',0,0,5,8],['金',5,8,6,8]],
+ 'elmo囲い':[['歩',7,7,7,6],['銀',7,9,6,8],['金',6,9,7,9],['玉',5,9,6,9],['玉',6,9,7,8],['金',0,0,5,9]],
+ '左美濃':[['歩',7,7,7,6],['玉',5,9,6,8],['玉',6,8,7,8],['玉',7,8,8,8],['銀',7,9,7,8],['金',0,0,5,8]],
+ '天守閣美濃':[['歩',7,7,7,6],['歩',8,7,8,6],['玉',5,9,6,8],['玉',6,8,7,8],['玉',7,8,8,7],['銀',7,9,7,8],['金',0,0,5,8]],
+ '美濃囲い':[['玉',5,9,4,8],['玉',4,8,3,8],['玉',3,8,2,8],['銀',3,9,3,8],['金',0,0,5,8]],
+ '片美濃':[['玉',5,9,4,8],['玉',4,8,3,8],['玉',3,8,2,8],['銀',3,9,3,8]],
+ '高美濃':[['玉',5,9,4,8],['玉',4,8,3,8],['玉',3,8,2,8],['銀',3,9,3,8],['金',0,0,5,8],['歩',3,7,3,6],['歩',4,7,4,6],['歩',5,7,5,6],['金',5,8,4,7]],
+ '銀冠':[['玉',5,9,4,8],['玉',4,8,3,8],['玉',3,8,2,8],['銀',3,9,3,8],['金',0,0,5,8],['歩',3,7,3,6],['歩',4,7,4,6],['歩',5,7,5,6],['金',5,8,4,7],['歩',2,7,2,6],['銀',3,8,2,7],['金',4,9,3,8]],
+ 'ダイヤモンド美濃':[['玉',5,9,4,8],['玉',4,8,3,8],['玉',3,8,2,8],['銀',3,9,3,8],['歩',4,7,4,6],['歩',5,7,5,6],['銀',0,0,5,8],['銀',5,8,4,7],['金',0,0,5,8]],
+ '木村美濃':[['玉',5,9,4,8],['玉',4,8,3,8],['玉',3,8,2,8],['金',4,9,3,8],['歩',4,7,4,6],['銀',3,9,4,8],['銀',4,8,4,7]],
+ '振り飛車穴熊':[['玉',5,9,4,8],['玉',4,8,3,8],['玉',3,8,2,8],['香',1,9,1,8],['玉',2,8,1,9],['銀',3,9,2,8],['金',4,9,3,9],['金',0,0,5,8],['金',5,8,4,8],['金',4,8,3,8]],
+ '銀冠穴熊':[['玉',5,9,4,8],['玉',4,8,3,8],['玉',3,8,2,8],['銀',3,9,3,8],['金',0,0,5,8],['歩',3,7,3,6],['歩',4,7,4,6],['歩',5,7,5,6],['金',5,8,4,7],['歩',2,7,2,6],['銀',3,8,2,7],['金',4,9,3,8],['香',1,9,1,8],['玉',2,8,1,9]],
+ '金無双':[['玉',5,9,4,8],['玉',4,8,3,8],['銀',3,9,2,8],['金',4,9,4,8],['金',0,0,5,8]]
+};
+
+// 知識クイズ（choices[0] が正解。表示時にシャッフル）
+const KNOWLEDGE = [
+  { q:'玉（ぎょく）を守るためにつくる形のことを、なんという？',
+    choices:['囲い（かこい）','詰み（つみ）','成り（なり）','千日手（せんにちて）'],
+    expl:'戦いが始まる前に玉を安全な場所へ！ 囲いをつくるのが上達（じょうたつ）のコツだよ。'},
+  { q:'昔からたくさん研究されてきた「良い手順（てじゅん）」のことを、なんという？',
+    choices:['定跡（じょうせき）','反則（はんそく）','持ち駒（もちごま）','入玉（にゅうぎょく）'],
+    expl:'定跡をおぼえると、序盤（じょばん）で失敗しにくくなるよ。'},
+  { q:'飛車（ひしゃ）を最初の場所のまま使って戦う戦法を、なんという？',
+    choices:['居飛車（いびしゃ）','振り飛車（ふりびしゃ）','棒銀（ぼうぎん）','穴熊（あなぐま）'],
+    expl:'飛車が「居る（いる）」ままだから居飛車。矢倉や棒銀は居飛車の戦法だよ。'},
+  { q:'飛車を左のほうへ動かして戦う戦法を、なんという？',
+    choices:['振り飛車（ふりびしゃ）','居飛車（いびしゃ）','早繰り銀（はやくりぎん）','雁木（がんぎ）'],
+    expl:'飛車を「振る（ふる）」から振り飛車。四間飛車（しけんびしゃ）や三間飛車が有名だよ。'},
+  { q:'振り飛車のときに、いちばんよく使われる囲いはどれ？',
+    choices:['美濃囲い','矢倉囲い','カニ囲い','舟囲い'],
+    expl:'美濃囲いは横からの攻めに強くて、振り飛車と相性（あいしょう）ばつぐん！'},
+  { q:'「棒銀（ぼうぎん）」戦法で、まっすぐ前に進めて攻める駒はどれ？',
+    choices:['銀','桂馬','香車','角'],
+    expl:'飛車の力を借りて銀がずんずん進む、攻めの基本戦法。棒みたいにまっすぐだから棒銀！'},
+  { q:'玉がすみっこ（9九や1一）にもぐりこむ、とてもかたい囲いはどれ？',
+    choices:['穴熊囲い','舟囲い','カニ囲い','中住まい（なかずまい）'],
+    expl:'クマが穴で冬ごもりするみたいだから穴熊。王手がかかりにくいのが強みだよ。'},
+  { q:'格言（かくげん）「◯のない将棋は負け将棋」。◯に入る駒は？',
+    choices:['歩','飛車','金','桂馬'],
+    expl:'歩はいちばん弱い駒だけど、攻めにも守りにも大活躍（だいかつやく）。歩を大切にしよう！'},
+  { q:'格言「桂馬の高跳（たかと）び ◯のえじき」。◯に入る駒は？',
+    choices:['歩','銀','香車','角'],
+    expl:'桂馬をあわてて跳ねると、歩にパクッと取られちゃう。跳ねるタイミングが大事だよ。'},
+  { q:'格言「居玉（いぎょく）は避（さ）けよ」。どういう意味？',
+    choices:['玉を最初の場所のまま戦うのはキケン','玉は動かさないほうが強い','玉で攻めるとよい','玉はすぐ成れる'],
+    expl:'玉が5九にいたままだと、攻められたときにひとたまりもない。まず囲いをつくろう！'},
+  { q:'格言「玉の早逃（はやに）げ ◯手の得（とく）」。◯に入る数は？',
+    choices:['八','三','五','百'],
+    expl:'あぶなくなる前に玉がスッと逃げておくと、八手ぶんも得するくらい安全になる、という意味だよ。'},
+  { q:'矢倉囲いが「とくに強い」のは、どこからの攻め？',
+    choices:['上（前）からの攻め','横からの攻め','ななめ後ろからの攻め','どこから攻められても同じ'],
+    expl:'矢倉は上からの攻めにがっちり強い。そのかわり横からの攻めはちょっとニガテなんだ。'},
+  { q:'美濃囲いのじゃく点（ウィークポイント）はどこ？',
+    choices:['はし（1筋）からの攻め','横からの攻め','守りがうすいところがない','飛車に弱い'],
+    expl:'美濃囲いは横に強いけど、はしっこ（端攻め・はたぜめ）や玉のななめ上（コビン）をねらわれると大ピンチ！'},
+  { q:'矢倉囲いがよく登場する、おたがいに居飛車どうしの戦いを、なんという？',
+    choices:['相居飛車（あいいびしゃ）','相振り飛車','対抗形（たいこうけい）','入玉将棋'],
+    expl:'おたがい居飛車なら「相居飛車」。片方が振り飛車なら「対抗形」というよ。'}
+];
+
+/* ================= 盤面SVG ================= */
+const KANJI_RANK = ['一','二','三','四','五','六','七','八','九'];
+function boardSVG(castle){
+  const cell = 50, n = 5, top = 22, right = 22;
+  const files = castle.crop === 'left' ? [9,8,7,6,5] : [5,4,3,2,1];
+  const ranks = [5,6,7,8,9];
+  const W = cell*n + right, H = cell*n + top;
+  let s = `<svg width="${Math.min(W,300)}" viewBox="0 0 ${W} ${H}" role="img" aria-label="将棋盤の囲いの形">`;
+  s += `<rect x="0" y="${top}" width="${cell*n}" height="${cell*n}" rx="4" fill="#f3d79b"/>`;
+  s += `<rect x="0" y="${top}" width="${cell*n}" height="${cell*n}" rx="4" fill="none" stroke="#7a4f26" stroke-width="3"/>`;
+  for(let i=1;i<n;i++){
+    s += `<line x1="${i*cell}" y1="${top}" x2="${i*cell}" y2="${top+cell*n}" stroke="#8a5c2e" stroke-width="1.4"/>`;
+    s += `<line x1="0" y1="${top+i*cell}" x2="${cell*n}" y2="${top+i*cell}" stroke="#8a5c2e" stroke-width="1.4"/>`;
+  }
+  files.forEach((f,i)=>{ s += `<text x="${i*cell+cell/2}" y="15" text-anchor="middle" font-size="13" fill="#cfe0ff" font-weight="bold">${f}</text>`; });
+  ranks.forEach((r,i)=>{ s += `<text x="${cell*n+11}" y="${top+i*cell+cell/2+5}" text-anchor="middle" font-size="13" fill="#cfe0ff" font-weight="bold">${KANJI_RANK[r-1]}</text>`; });
+  for(const [k,f,r] of castle.pieces){
+    const ci = files.indexOf(f), ri = ranks.indexOf(r);
+    if(ci<0||ri<0) continue;
+    const x = ci*cell, y = top + ri*cell;
+    const gyoku = k==='玉';
+    s += `<g transform="translate(${x},${y})">
+      <polygon points="25,4 39,11 43,46 7,46 11,11" fill="${gyoku?'#ffe6b0':'#f7dfae'}" stroke="#7a4f26" stroke-width="2" stroke-linejoin="round"/>
+      <text x="25" y="36" text-anchor="middle" font-size="24" font-weight="bold" fill="#3a2410" font-family="serif">${k}</text>
+    </g>`;
+  }
+  return s + '</svg>';
+}
+
+/* ================= ゲーム進行 ================= */
+const $ = id => document.getElementById(id);
+let round = [], idx = 0, score = 0, mode = 'castle';
+
+const shuffle = a => { a=[...a]; for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+
+function castleQuestion(castle){
+  // ひっかけは同じ系統（似た形）の囲いを優先して選ぶ
+  const same  = shuffle(CASTLES.filter(c=>c!==castle && c.fam===castle.fam));
+  const other = shuffle(CASTLES.filter(c=>c!==castle && c.fam!==castle.fam));
+  const wrong = [...same, ...other].slice(0,3);
+  return { type:'castle', castle,
+    choices: shuffle([castle,...wrong].map(c=>({name:c.name,kana:c.kana,ok:c===castle}))) };
+}
+function knowledgeQuestion(k){
+  return { type:'knowledge', k,
+    choices: shuffle(k.choices.map((t,i)=>({text:t,ok:i===0}))) };
+}
+
+function buildRound(m){
+  if(m==='castle'){
+    // やさしい囲いから始めて、だんだん難しく（全8問・重複なし）
+    return shuffle(CASTLES).slice(0,8).sort((a,b)=>a.lv-b.lv).map(castleQuestion);
+  }
+  if(m==='knowledge'){
+    return shuffle(KNOWLEDGE).slice(0,10).map(knowledgeQuestion);
+  }
+  const q = [...shuffle(CASTLES).slice(0,4).map(castleQuestion),
+             ...shuffle(KNOWLEDGE).slice(0,6).map(knowledgeQuestion)];
+  return shuffle(q); // ミックス10問
+}
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  $(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function start(m){
+  mode = m; round = buildRound(m); idx = 0; score = 0;
+  $('score-now').textContent = 0;
+  renderProgress();
+  showScreen('screen-quiz');
+  renderQuestion();
+}
+
+function renderProgress(){
+  $('progress').innerHTML = round.map((_,i)=>
+    `<svg viewBox="0 0 50 52" class="${i<idx?'done':i===idx?'now':''}">
+       <polygon points="25,2 40,10 45,50 5,50 10,10" fill="#f0cd8b" fill-opacity="${i<idx?1:0}" stroke="#f0cd8b" stroke-width="3" stroke-linejoin="round"/>
+     </svg>`).join('');
+}
+
+function renderQuestion(){
+  const q = round[idx];
+  $('q-count').textContent = `第${idx+1}問`;
+  renderProgress();
+  const choicesEl = $('choices');
+  if(q.type==='castle'){
+    const stars = '★'.repeat(q.castle.lv) + '☆'.repeat(3-q.castle.lv);
+    $('q-text').innerHTML = `<span class="diff-badge">むずかしさ ${stars}</span><br>この<ruby>囲<rt>かこ</rt></ruby>いの<ruby>名前<rt>なまえ</rt></ruby>はどれ？`;
+    $('board-wrap').innerHTML = boardSVG(q.castle);
+    $('board-wrap').style.display = 'block';
+    choicesEl.className = 'koma-grid';
+    choicesEl.innerHTML = q.choices.map((c,i)=>
+      `<button class="koma-choice" data-i="${i}">
+         <span class="shape"><span class="kana">${c.kana}</span><span class="kanji">${c.name}</span></span>
+       </button>`).join('');
+  } else {
+    $('q-text').textContent = q.k.q;
+    $('board-wrap').innerHTML = '';
+    $('board-wrap').style.display = 'none';
+    choicesEl.className = 'pill-list';
+    choicesEl.innerHTML = q.choices.map((c,i)=>
+      `<button class="pill" data-i="${i}">${c.text}</button>`).join('');
+  }
+  choicesEl.querySelectorAll('button').forEach(b=>b.addEventListener('click', onAnswer));
+}
+
+const OK_WORDS = ['せいかい！','おみごと！','するどい！','ナイス！'];
+const NG_WORDS = ['ざんねん…','おしい！','つぎは当てよう！'];
+
+function onAnswer(e){
+  const btn = e.currentTarget;
+  const q = round[idx];
+  const picked = q.choices[+btn.dataset.i];
+  const ok = picked.ok;
+  document.querySelectorAll('#choices button').forEach((b,i)=>{
+    b.disabled = true;
+    if(q.choices[i].ok) b.classList.add('correct');
+    else b.classList.add('wrong');
+  });
+  if(ok){ score++; $('score-now').textContent = score; }
+
+  const mark = $('judge-mark');
+  mark.className = 'judge-mark ' + (ok?'ok':'ng');
+  mark.querySelector('.mark').textContent = ok?'◯':'✕';
+  $('judge-word').textContent = (ok?OK_WORDS:NG_WORDS)[Math.floor(Math.random()*(ok?OK_WORDS:NG_WORDS).length)];
+  const ansName = q.type==='castle' ? `${q.castle.name}（${q.castle.kana}）` : q.k.choices[0];
+  $('judge-answer').textContent = 'こたえ：' + ansName;
+  $('judge-expl').textContent = q.type==='castle' ? q.castle.expl : q.k.expl;
+  setTimeout(()=> $('judge').classList.add('show'), 500);
+}
+
+$('btn-next').addEventListener('click', ()=>{
+  $('judge').classList.remove('show');
+  idx++;
+  if(idx < round.length) renderQuestion();
+  else showResult();
+});
+
+function rankOf(rate){
+  if(rate >= 1)   return ['名人（めいじん）！','パーフェクト！！ きみはもう将棋はかせ。プロ棋士（きし）もびっくりだ！','★★★★★'];
+  if(rate >= .8)  return ['有段者（ゆうだんしゃ）クラス','すごい！ あと少しで名人だ。まちがえた問題をおぼえたら完ぺき！','★★★★☆'];
+  if(rate >= .6)  return ['一級（いっきゅう）','いいちょうし！ 囲いと格言をもう少しおぼえて、有段者をめざそう！','★★★☆☆'];
+  if(rate >= .4)  return ['五級（ごきゅう）','ここからが本番！ 解説（かいせつ）を読んで、もういちどチャレンジしよう。','★★☆☆☆'];
+  return ['みならい','だいじょうぶ、名人もさいしょはみならいから。くりかえせば強くなる！','★☆☆☆☆'];
+}
+
+function showResult(){
+  const rate = score / round.length;
+  const [rank,msg,stars] = rankOf(rate);
+  $('rank-name').textContent = rank;
+  $('result-msg').textContent = msg;
+  $('stars').textContent = stars;
+  $('score-final').textContent = score;
+  $('score-total').textContent = round.length;
+  showScreen('screen-result');
+  if(rate >= .8) komaConfetti();
+}
+
+function komaConfetti(){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const chars = ['歩','香','桂','銀','金','角','飛','王'];
+  for(let i=0;i<26;i++){
+    const el = document.createElement('span');
+    el.className = 'confetti';
+    el.textContent = chars[Math.floor(Math.random()*chars.length)];
+    el.style.left = Math.random()*100 + 'vw';
+    el.style.color = ['#f0cd8b','#ff9d85','#8fd3ff','#a8e6b8'][i%4];
+    el.style.animationDuration = (2.2 + Math.random()*2.5) + 's';
+    el.style.animationDelay = Math.random()*0.9 + 's';
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(), 6000);
+  }
+}
+
+/* ---------- 囲いずかん ---------- */
+const FAM_LABEL = {yagura:'🏯 矢倉のなかま', mino:'⛰️ 美濃のなかま', ana:'🐻 穴熊のなかま',
+                   anaR:'🐻 穴熊のなかま', fune:'⛵ 舟囲いのなかま'};
+let zukanBuilt = false;
+function showZukan(){
+  if(!zukanBuilt){
+    const order = ['yagura','mino','ana','fune'];
+    const famOf = c => c.fam==='anaR' ? 'ana' : c.fam;
+    let html = '<p class="zukan-note">▶ボタンで、囲いができるまでを1手ずつアニメで見られるよ（飛車・角などは省略）</p>';
+    for(const f of order){
+      html += `<div class="zukan-fam">${FAM_LABEL[f]}</div>`;
+      for(const c of CASTLES.filter(x=>famOf(x)===f)){
+        const i = CASTLES.indexOf(c);
+        html += `<div class="zukan-card">
+          <div class="z-name">${c.name}<br><span class="z-kana">${c.kana}</span></div>
+          <div class="z-stars">むずかしさ ${'★'.repeat(c.lv)}${'☆'.repeat(3-c.lv)}</div>
+          <div class="board-wrap" id="zb-${i}">${boardSVG(c)}</div>
+          <div class="anim-bar">
+            <button class="anim-btn" data-i="${i}">▶ くみたてアニメ</button>
+            <span class="anim-cap" id="zc-${i}"></span>
+          </div>
+          <p class="z-expl">${c.expl}</p>
+        </div>`;
+      }
+    }
+    $('zukan-list').innerHTML = html;
+    document.querySelectorAll('.anim-btn').forEach(b=>
+      b.addEventListener('click', ()=>playAnim(+b.dataset.i, b)));
+    zukanBuilt = true;
+  }
+  showScreen('screen-zukan');
+}
+
+/* ---------- 組み上がりアニメ ---------- */
+const ZEN = '０１２３４５６７８９';
+const SVGNS = 'http://www.w3.org/2000/svg';
+const CELL = 50, GRID_TOP = 22;
+
+function mkPieceEl(kanji, x, y){
+  const g = document.createElementNS(SVGNS,'g');
+  g.setAttribute('class','pc');
+  g.style.transform = `translate(${x}px,${y}px)`;
+  const poly = document.createElementNS(SVGNS,'polygon');
+  poly.setAttribute('points','25,4 39,11 43,46 7,46 11,11');
+  poly.setAttribute('fill', kanji==='玉' ? '#ffe6b0' : '#f7dfae');
+  poly.setAttribute('stroke','#7a4f26');
+  poly.setAttribute('stroke-width','2');
+  poly.setAttribute('stroke-linejoin','round');
+  const t = document.createElementNS(SVGNS,'text');
+  t.setAttribute('x','25'); t.setAttribute('y','36');
+  t.setAttribute('text-anchor','middle');
+  t.setAttribute('font-size','24'); t.setAttribute('font-weight','bold');
+  t.setAttribute('fill','#3a2410'); t.setAttribute('font-family','serif');
+  t.textContent = kanji;
+  g.append(poly, t);
+  return g;
+}
+
+function playAnim(i, btn){
+  const c = CASTLES[i];
+  const wrap = $('zb-'+i), cap = $('zc-'+i);
+  const files = c.crop==='left' ? [9,8,7,6,5] : [5,4,3,2,1];
+  const ranks = [5,6,7,8,9];
+  const xy = (f,r) => [files.indexOf(f)*CELL, GRID_TOP + ranks.indexOf(r)*CELL];
+  btn.disabled = true;
+  cap.textContent = '';
+
+  // 盤面（マス目のみ）を作り直し、初期配置の駒を置く
+  wrap.innerHTML = boardSVG({crop:c.crop, pieces:[]});
+  const svg = wrap.querySelector('svg');
+  const onBoard = {}; // 'f-r' -> element
+  const init = (c.crop==='left'?INIT_L:INIT_R).concat(EXTRA_INIT[c.name]||[]);
+  for(const [k,f,r] of init){
+    const [x,y] = xy(f,r);
+    const el = mkPieceEl(k,x,y);
+    svg.appendChild(el);
+    onBoard[f+'-'+r] = el;
+  }
+
+  const moves = MOVES[c.name];
+  const edgeX = c.crop==='left' ? 5*CELL + 10 : -CELL - 10; // 入場駒のスタート位置
+  let n = 0;
+  const step = () => {
+    if(n >= moves.length){
+      cap.textContent = 'かんせい！✨';
+      btn.disabled = false;
+      btn.textContent = '▶ もういちど';
+      return;
+    }
+    const [k,f1,r1,f2,r2] = moves[n];
+    cap.textContent = `${n+1}手目：▲${ZEN[f2]}${KANJI_RANK[r2-1]}${k}`;
+    const [tx,ty] = xy(f2,r2);
+    if(f1===0){ // 囲いエリアの外からやってくる駒
+      const el = mkPieceEl(k, edgeX, ty);
+      el.style.opacity = '0';
+      svg.appendChild(el);
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{
+        el.style.opacity = '1';
+        el.style.transform = `translate(${tx}px,${ty}px)`;
+      }));
+      onBoard[f2+'-'+r2] = el;
+    } else {
+      const el = onBoard[f1+'-'+r1];
+      delete onBoard[f1+'-'+r1];
+      el.style.transform = `translate(${tx}px,${ty}px)`;
+      onBoard[f2+'-'+r2] = el;
+    }
+    n++;
+    setTimeout(step, 950);
+  };
+  setTimeout(step, 300);
+}
+
+$('btn-zukan').addEventListener('click', showZukan);
+$('btn-zukan-back').addEventListener('click', ()=>showScreen('screen-title'));
+
+document.querySelectorAll('.mode-btn:not(.zukan-btn)').forEach(b=>
+  b.addEventListener('click', ()=>start(b.dataset.mode)));
+$('btn-retry').addEventListener('click', ()=>start(mode));
+$('btn-home').addEventListener('click', ()=>showScreen('screen-title'));
+</script>
+</body>
+</html>
