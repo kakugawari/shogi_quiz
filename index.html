@@ -57,6 +57,7 @@
   --shu-usu:  #f7ece7;          /* 朱のうすい面 */
   --ai:       #2f5d8a;          /* 藍 (✕ などのさし色) */
   --kon:      #22406b;          /* 紺 (ずかん) */
+  --murasaki: #5b4370;          /* 紫 (年表) */
   --cream:    #fff7e8;
   --radius:   14px;
   /* 紙に置いた影。濃い影より、うすく広い影のほうが和紙になじむ */
@@ -558,6 +559,66 @@ body {
   font-family: "Shippori Mincho B1", serif; }
 @keyframes fall { to { transform: translateY(112vh) rotate(680deg); opacity: .85; } }
 
+/* ---------------- 年表（歴代タイトルホルダー） ---------------- */
+
+/* 棋戦は 8 つまで増える。3 列固定だとあふれるので、幅に合わせて折り返す */
+#nenpyo-tabs { grid-template-columns: repeat(auto-fit, minmax(64px, 1fr)); }
+
+.n-range {
+  margin: 10px 0 0; padding: 7px 10px; border-radius: 10px;
+  font-size: .7rem; font-weight: 500; text-align: center; line-height: 1.6;
+  color: var(--murasaki); background: #f4f0f7; border: 1px solid #e2d8ea;
+}
+
+/* 朱のたて線に、年を古い順に打っていく */
+.nenpyo { list-style: none; margin: 18px 0 0; padding: 0 0 0 4px; position: relative; }
+.nenpyo::before {
+  content: ""; position: absolute; left: 62px; top: 6px; bottom: 6px; width: 2px;
+  background: linear-gradient(180deg, var(--sen-2), var(--shu) 12%, var(--shu) 88%, var(--sen-2));
+  opacity: .5;
+}
+.n-row { display: flex; align-items: flex-start; gap: 20px; padding: 0 0 14px; position: relative; }
+.n-row::before {                       /* たて線の上に置く節 */
+  content: ""; position: absolute; left: 58px; top: 7px; width: 10px; height: 10px;
+  border-radius: 50%; background: var(--kami); border: 2px solid var(--shu); z-index: 1;
+}
+.n-year {
+  width: 50px; flex: none; text-align: right; padding-top: 1px;
+  display: flex; flex-direction: column; align-items: flex-end; line-height: 1.25;
+}
+.n-year b {
+  font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif;
+  font-size: .88rem; font-weight: 700; color: var(--sumi-2); letter-spacing: .02em;
+}
+.n-dash { font-size: .62rem; color: var(--usu); line-height: 1; }
+.n-body {
+  flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 9px;
+  background: var(--kami-2); border: 1px solid var(--sen); border-radius: 11px;
+  box-shadow: var(--shadow); padding: 9px 12px 10px;
+}
+.n-name {
+  font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif;
+  font-size: 1.06rem; font-weight: 700; color: var(--sumi); letter-spacing: .04em;
+}
+.n-ki { font-size: .7rem; font-weight: 500; color: var(--usu); }
+.n-renpa {
+  font-size: .68rem; font-weight: 700; color: #fff; background: var(--shu);
+  border-radius: 999px; padding: 2px 8px; letter-spacing: .04em;
+}
+.n-tally { list-style: none; margin: 0; padding: 0; }
+.n-tally li {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+  padding: 9px 12px; border-bottom: 1px solid var(--sen);
+}
+.n-tally li:last-child { border-bottom: 0; }
+.n-tally .n-name { font-size: .98rem; }
+
+.mode-btn.is-nenpyo { border-color: #ddd0e4; }
+.mode-btn.is-nenpyo .medal {
+  background: linear-gradient(180deg, #efe9f2, #ded2e6); color: var(--murasaki);
+}
+.mode-btn.is-nenpyo .name { color: var(--murasaki); }
+
 button:focus-visible, .tab:focus-visible { outline: 3px solid var(--shu); outline-offset: 2px; }
 
 @media (max-width: 340px) {
@@ -637,6 +698,19 @@ button:focus-visible, .tab:focus-visible { outline: 3px solid var(--shu); outlin
       <button class="big-btn alt" id="btn-zukan-from-result" type="button">ずかんで ふくしゅう</button>
       <button class="big-btn alt" id="btn-home" type="button">モードを えらぶ</button>
     </div>
+  </section>
+
+  <!-- ============ 年表 ============ -->
+  <section class="screen" id="screen-nenpyo">
+    <div class="hud">
+      <button class="icon-btn" id="btn-nenpyo-back" type="button" aria-label="タイトルへもどる">◀</button>
+      <span class="hud-count">年表</span>
+      <span class="hud-score" id="nenpyo-count"></span>
+    </div>
+    <div class="tabs" id="nenpyo-tabs"></div>
+    <p class="zukan-note" id="nenpyo-note"></p>
+    <p class="n-range" id="nenpyo-range"></p>
+    <div id="nenpyo-list"></div>
   </section>
 
   <!-- ============ ずかん ============ -->
@@ -1939,6 +2013,90 @@ button:focus-visible, .tab:focus-visible { outline: 3px solid var(--shu); outlin
 });
 
 /*!
+ * titles.js — 歴代タイトルホルダーの年表。
+ *
+ * ★ このファイルだけは、将棋エンジンで検算できない ★
+ * 囲い・手筋・戦法は core.js が実際に指して確かめているが、
+ * 「何年度に誰がタイトルを取ったか」は将棋のルールから導けない。
+ * だから外の記録を写して入れる。名前が合っているかは写す人の責任。
+ * 写しまちがい (年のとばし・重複・逆順、名前のゆれ、肩書きの混入) だけは
+ * titles.test.js が落とす。
+ *
+ * 中身は「年度 × 棋戦」の表のまま書く。もとの表と同じ形にしておけば、
+ * 1 行ずつ目で見くらべられるため (並べかえて写すと、まちがえたとき気づけない)。
+ * 空文字 '' は「その年度はまだタイトル戦になっていない」。
+ * 行は古い順。新しい年度は下に足す。
+ */
+(function (root, factory) {
+  'use strict';
+  if (typeof module === 'object' && typeof module.exports === 'object') {
+    module.exports = factory();
+  } else {
+    root.Titles = factory();
+  }
+})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+  'use strict';
+
+  /* 棋戦の並びは、表の左から右と同じ */
+  const META = [
+    { key: 'ryuou',  name: '竜王',   kana: 'りゅうおう', note: '賞金がいちばん高いタイトル。1988年度にはじまった、八大タイトルの中では新しいほう' },
+    { key: 'meijin', name: '名人',   kana: 'めいじん',   note: 'いちばん古いタイトル。順位戦のA級で1位になった人だけが挑戦できる' },
+    { key: 'eiou',   name: '叡王',   kana: 'えいおう',   note: 'いちばん新しいタイトル。2018年度からタイトル戦になった' },
+    { key: 'oui',    name: '王位',   kana: 'おうい',     note: '挑戦者は、紅組と白組に分かれたリーグ戦で決める' },
+    { key: 'ouza',   name: '王座',   kana: 'おうざ',     note: '五番勝負で決めるタイトル' },
+    { key: 'kiou',   name: '棋王',   kana: 'きおう',     note: '挑戦者を決める勝ちぬき戦に、負けた人がもう一度上がれる道があるのが特ちょう' },
+    { key: 'oushou', name: '王将',   kana: 'おうしょう', note: '挑戦者は、7人のリーグ戦で決める' },
+    { key: 'kisei',  name: '棋聖',   kana: 'きせい',     note: '五番勝負で決めるタイトル' }
+  ];
+
+  /* 年度 / 竜王 / 名人 / 叡王 / 王位 / 王座 / 棋王 / 王将 / 棋聖 */
+  const ROWS = [
+    [1995, '羽生善治', '羽生善治', '',         '羽生善治', '羽生善治', '羽生善治', '羽生善治', '羽生善治'],
+    [1996, '谷川浩司', '羽生善治', '',         '羽生善治', '羽生善治', '羽生善治', '羽生善治', '三浦弘行'],
+    [1997, '谷川浩司', '谷川浩司', '',         '羽生善治', '羽生善治', '羽生善治', '羽生善治', '屋敷伸之'],
+    [1998, '藤井猛',   '佐藤康光', '',         '羽生善治', '羽生善治', '羽生善治', '羽生善治', '郷田真隆'],
+    [1999, '藤井猛',   '佐藤康光', '',         '羽生善治', '羽生善治', '羽生善治', '羽生善治', '谷川浩司'],
+    [2000, '藤井猛',   '丸山忠久', '',         '羽生善治', '羽生善治', '羽生善治', '羽生善治', '羽生善治'],
+    [2001, '羽生善治', '丸山忠久', '',         '羽生善治', '羽生善治', '羽生善治', '佐藤康光', '郷田真隆'],
+    [2002, '羽生善治', '森内俊之', '',         '谷川浩司', '羽生善治', '丸山忠久', '羽生善治', '佐藤康光'],
+    [2003, '森内俊之', '羽生善治', '',         '谷川浩司', '羽生善治', '谷川浩司', '森内俊之', '佐藤康光'],
+    [2004, '渡辺明',   '森内俊之', '',         '羽生善治', '羽生善治', '羽生善治', '羽生善治', '佐藤康光'],
+    [2005, '渡辺明',   '森内俊之', '',         '羽生善治', '羽生善治', '森内俊之', '羽生善治', '佐藤康光'],
+    [2006, '渡辺明',   '森内俊之', '',         '羽生善治', '羽生善治', '佐藤康光', '羽生善治', '佐藤康光'],
+    [2007, '渡辺明',   '森内俊之', '',         '深浦康市', '羽生善治', '佐藤康光', '羽生善治', '佐藤康光'],
+    [2008, '渡辺明',   '羽生善治', '',         '深浦康市', '羽生善治', '久保利明', '羽生善治', '羽生善治'],
+    [2009, '渡辺明',   '羽生善治', '',         '深浦康市', '羽生善治', '久保利明', '久保利明', '羽生善治'],
+    [2010, '渡辺明',   '羽生善治', '',         '広瀬章人', '羽生善治', '久保利明', '久保利明', '羽生善治'],
+    [2011, '渡辺明',   '森内俊之', '',         '羽生善治', '渡辺明',   '郷田真隆', '佐藤康光', '羽生善治'],
+    [2012, '渡辺明',   '森内俊之', '',         '羽生善治', '羽生善治', '渡辺明',   '渡辺明',   '羽生善治'],
+    [2013, '森内俊之', '森内俊之', '',         '羽生善治', '羽生善治', '渡辺明',   '渡辺明',   '羽生善治'],
+    [2014, '糸谷哲郎', '羽生善治', '',         '羽生善治', '羽生善治', '渡辺明',   '郷田真隆', '羽生善治'],
+    [2015, '渡辺明',   '羽生善治', '',         '羽生善治', '羽生善治', '渡辺明',   '郷田真隆', '羽生善治'],
+    [2016, '渡辺明',   '佐藤天彦', '',         '羽生善治', '羽生善治', '渡辺明',   '久保利明', '羽生善治'],
+    [2017, '羽生善治', '佐藤天彦', '',         '菅井竜也', '中村太地', '渡辺明',   '久保利明', '羽生善治'],
+    [2018, '広瀬章人', '佐藤天彦', '高見泰地', '豊島将之', '斎藤慎太郎', '渡辺明', '渡辺明',   '豊島将之'],
+    [2019, '豊島将之', '豊島将之', '永瀬拓矢', '木村一基', '永瀬拓矢', '渡辺明',   '渡辺明',   '渡辺明'],
+    [2020, '豊島将之', '渡辺明',   '豊島将之', '藤井聡太', '永瀬拓矢', '渡辺明',   '渡辺明',   '藤井聡太'],
+    [2021, '藤井聡太', '渡辺明',   '藤井聡太', '藤井聡太', '永瀬拓矢', '渡辺明',   '藤井聡太', '藤井聡太'],
+    [2022, '藤井聡太', '渡辺明',   '藤井聡太', '藤井聡太', '永瀬拓矢', '藤井聡太', '藤井聡太', '藤井聡太'],
+    [2023, '藤井聡太', '藤井聡太', '藤井聡太', '藤井聡太', '藤井聡太', '藤井聡太', '藤井聡太', '藤井聡太'],
+    [2024, '藤井聡太', '藤井聡太', '伊藤匠',   '藤井聡太', '藤井聡太', '藤井聡太', '藤井聡太', '藤井聡太']
+  ];
+
+  /* 表を棋戦ごとの並びに組みかえる。手で二度書きしないための計算 */
+  const TITLES = META.map((m, col) => {
+    const holders = [];
+    for (const row of ROWS) {
+      const name = row[col + 1];
+      if (name) holders.push({ year: row[0], name: name });
+    }
+    return { key: m.key, name: m.name, kana: m.kana, note: m.note, holders: holders };
+  });
+
+  return { TITLES: TITLES, ROWS: ROWS, META: META };
+});
+
+/*!
  * app.js — 画面まわり。盤の描画、パラパラ再生、クイズの進行。
  * ロジック (将棋のルール・出題) は core.js、中身は data.js。
  */
@@ -1947,6 +2105,7 @@ button:focus-visible, .tab:focus-visible { outline: 3px solid var(--shu); outlin
 
   const C = window.Core;
   const D = window.Data;
+  const T = window.Titles;
   const $ = (id) => document.getElementById(id);
 
   const RANK_KANJI = ['一', '二', '三', '四', '五', '六', '七', '八', '九'];
@@ -2325,6 +2484,17 @@ button:focus-visible, .tab:focus-visible { outline: 3px solid var(--shu); outlin
     z.appendChild(zb);
     z.addEventListener('click', () => showZukan());
     list.appendChild(z);
+
+    const y = el('button', 'mode-btn is-nenpyo');
+    y.type = 'button';
+    y.appendChild(el('span', 'medal', '年'));
+    const yb = el('span', 'body');
+    yb.appendChild(el('span', 'name', '年表'));
+    yb.appendChild(el('span', 'desc',
+      T.TITLES.length + 'つの棋戦の、歴代タイトルホルダーを古い順に。誰が何連覇したかも見られる'));
+    y.appendChild(yb);
+    y.addEventListener('click', () => showNenpyo());
+    list.appendChild(y);
 
     // メニューに出しているモードの問題数だけを数える
     const total = MODES.reduce((n, m) => n + m.count(), 0);
@@ -2731,6 +2901,93 @@ button:focus-visible, .tab:focus-visible { outline: 3px solid var(--shu); outlin
     }
   }
 
+  /* ============================================================
+     年表 (歴代タイトルホルダー)
+     ============================================================ */
+
+  let nenpyoTab = null;
+
+  /** 同じ人が続いたところを 1 かたまりにまとめる (「4連覇」と見せるため)。 */
+  function runsOf(holders) {
+    const runs = [];
+    for (const h of holders) {
+      const last = runs[runs.length - 1];
+      if (last && last.name === h.name) last.rows.push(h);
+      else runs.push({ name: h.name, rows: [h] });
+    }
+    return runs;
+  }
+
+  /** 通算で何期取ったか。多い順に。 */
+  function tallyOf(holders) {
+    const n = {};
+    for (const h of holders) n[h.name] = (n[h.name] || 0) + 1;
+    return Object.keys(n).map((name) => ({ name: name, ki: n[name] }))
+      .sort((a, b) => b.ki - a.ki || a.name.localeCompare(b.name));
+  }
+
+  function buildNenpyo(key) {
+    const title = T.TITLES.find((t) => t.key === key) || T.TITLES[0];
+    const list = $('nenpyo-list');
+    list.innerHTML = '';
+    $('nenpyo-note').textContent = title.note;
+    const from = title.holders[0].year;
+    const to = title.holders[title.holders.length - 1].year;
+    $('nenpyo-count').textContent = title.holders.length + '年ぶん';
+    $('nenpyo-range').textContent = '収録は ' + from + '年度 〜 ' + to + '年度。'
+      + 'それより前と、それより新しい年度はまだ入っていないよ';
+
+    const line = el('ol', 'nenpyo');
+    for (const run of runsOf(title.holders)) {
+      const first = run.rows[0];
+      const last = run.rows[run.rows.length - 1];
+      const li = el('li', 'n-row');
+      const years = el('span', 'n-year');
+      years.appendChild(el('b', null, String(first.year)));
+      if (run.rows.length > 1) {
+        years.appendChild(el('span', 'n-dash', '〜'));
+        years.appendChild(el('b', null, String(last.year)));
+      }
+      li.appendChild(years);
+      const body = el('span', 'n-body');
+      body.appendChild(el('span', 'n-name', run.name));
+      if (run.rows.length > 1) body.appendChild(el('span', 'n-renpa', run.rows.length + '連覇'));
+      li.appendChild(body);
+      line.appendChild(li);
+    }
+    list.appendChild(line);
+
+    // 通算獲得数は holders から数える (書き足したら勝手に合う)
+    const tally = tallyOf(title.holders).slice(0, 5);
+    list.appendChild(el('div', 'zukan-fam', '通算で多い人'));
+    const top = el('ul', 'n-tally');
+    for (const t of tally) {
+      const li = el('li');
+      li.appendChild(el('span', 'n-name', t.name));
+      li.appendChild(el('span', 'n-ki', t.ki + '年'));
+      top.appendChild(li);
+    }
+    list.appendChild(top);
+  }
+
+  function showNenpyo(key) {
+    stopPlayer();
+    nenpyoTab = key || nenpyoTab || T.TITLES[0].key;
+    const tabs = $('nenpyo-tabs');
+    tabs.innerHTML = '';
+    for (const t of T.TITLES) {
+      const b = el('button', 'tab' + (t.key === nenpyoTab ? ' is-on' : ''), t.name);
+      b.type = 'button';
+      b.dataset.tab = t.key;
+      b.addEventListener('click', () => showNenpyo(t.key));
+      tabs.appendChild(b);
+    }
+    buildNenpyo(nenpyoTab);
+    showScreen('screen-nenpyo');
+  }
+
+  $('btn-nenpyo-back').addEventListener('click', () => { showScreen('screen-title'); renderTitle(); });
+
   function showZukan(tab) {
     stopPlayer();
     zukanTab = tab || zukanTab;
@@ -2756,6 +3013,7 @@ button:focus-visible, .tab:focus-visible { outline: 3px solid var(--shu); outlin
       start: start,
       showScreen: showScreen,
       showZukan: showZukan,
+      showNenpyo: showNenpyo,
       answer: (i) => {
         const btn = document.querySelector('#choices button[data-i="' + i + '"]');
         if (btn) btn.click();
