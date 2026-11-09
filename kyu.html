@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>級の記録</title>
+<meta name="description" content="将棋の級位・段位があがってきた記録">
+<meta name="theme-color" content="#faf8f3">
+<link rel="icon" href="./icon-192.png">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="将棋年表">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="./app.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800&family=Shippori+Mincho+B1:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./site.css">
+<style>
+/* ---------------- 級の記録 ---------------- */
+
+.k-now {
+  text-align: center; background: var(--kami-2); border: 1px solid var(--sen);
+  border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px 12px 14px;
+}
+.k-now-who { font-size: .78rem; color: var(--usu); letter-spacing: .1em; }
+.k-now-rank {
+  font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif;
+  font-size: 2.6rem; color: var(--shu); letter-spacing: .12em; line-height: 1.3; margin-top: 4px;
+}
+.k-now-sub { font-size: .76rem; font-weight: 500; color: var(--sumi-2); line-height: 1.8; }
+
+.k-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.k-stat {
+  background: var(--kami-2); border: 1px solid var(--sen); border-radius: 11px;
+  padding: 9px 4px; text-align: center;
+}
+.k-stat b { display: block; font-size: 1.25rem; color: var(--sumi); }
+.k-stat span { font-size: .66rem; font-weight: 500; color: var(--usu); }
+
+.k-chart-wrap {
+  background: var(--kami-2); border: 1px solid var(--sen); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 10px 8px 6px; position: relative;
+}
+.k-chart { display: block; width: 100%; height: auto; overflow: visible; }
+.k-chart .ax { font-size: 10px; fill: var(--usu); font-weight: 500; }
+.k-chart .grid { stroke: var(--sen); stroke-width: 1; }
+.k-chart .ln { fill: none; stroke-width: 2; stroke-linejoin: round; }
+.k-chart .dot { stroke: var(--kami-2); stroke-width: 2; }
+.k-chart .hit { fill: transparent; cursor: pointer; }
+.k-tip {
+  position: absolute; pointer-events: none; z-index: 2;
+  background: var(--sumi); color: #fff; font-size: .74rem; line-height: 1.6;
+  padding: 5px 9px; border-radius: 8px; white-space: nowrap; transform: translate(-50%, -110%);
+}
+.k-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; justify-content: center; margin-top: 6px; font-size: .74rem; color: var(--sumi-2); }
+.k-legend i { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: 3px; margin-right: 5px; }
+
+.k-days { font-size: .7rem; font-weight: 500; color: var(--usu); margin-left: auto; white-space: nowrap; }
+.k-where { display: block; font-size: .7rem; font-weight: 500; color: var(--usu); margin-top: 2px; }
+.k-memo { display: block; font-size: .74rem; font-weight: 500; color: var(--sumi-2); line-height: 1.7; margin-top: 3px; }
+.n-row .n-body { flex-wrap: wrap; }
+.k-main { display: flex; align-items: baseline; gap: 8px; width: 100%; }
+.k-year-md { display: block; font-size: .64rem; color: var(--usu); font-weight: 500; }
+
+.k-empty {
+  background: var(--kami-2); border: 1px dashed var(--sen-2); border-radius: var(--radius);
+  padding: 16px; font-size: .8rem; font-weight: 500; line-height: 1.9; color: var(--sumi-2);
+}
+.k-empty code { font-size: .74rem; background: var(--kami-3); padding: 1px 4px; border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <header class="site-head">
+    <h1 class="site-title" id="k-title">級の記録<small>きゅう・だん の あゆみ</small></h1>
+    <nav class="site-nav">
+      <a href="./">タイトル年表</a>
+      <a href="./kyu.html" aria-current="page">級の記録</a>
+    </nav>
+  </header>
+
+  <section class="screen is-active" id="screen-kyu">
+    <div id="kyu-body"></div>
+  </section>
+</div>
+
+<script>
+/*!
+ * 級の記録。中身は下の KIROKU に書く (このファイルだけ直せばよい)。
+ *
+ * 1 行 = 1 回の昇級・昇段 (いちばん最初の「はじめて級をもらった」も 1 行)。
+ *   date  … 'YYYY-MM-DD'。日がわからなければ 'YYYY-MM' でもよい
+ *   rank  … '15級' / '1級' / '初段' / '二段' など。数字は半角でも漢数字でもよい
+ *   where … どこでの級か (道場の名前、将棋連盟、ネット将棋 など)。
+ *           ちがう where は、グラフで別の線になる (級のつけ方が場所ごとにちがうため)
+ *   memo  … ひとこと (なくてもよい)
+ */
+const KIROKU = {
+  name: '',            // グラフの上に出す名前 (よび名でよい)。空ならださない
+  rows: [
+    // { date: '2024-04-14', rank: '15級', where: '〇〇将棋教室', memo: 'はじめての級' },
+  ]
+};
+
+(function () {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  function el(tag, cls, text) {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text !== undefined) e.textContent = text;
+    return e;
+  }
+
+  const KANSUJI = { 一: 1, 二: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9, 十: 10, 初: 1 };
+  /** '15級' → -15、'初段' → 1、'二段' → 2。上にいくほど大きい数になる。 */
+  function rankValue(rank) {
+    const m = /^(\d+|[一二三四五六七八九十初]+)\s*(級|段)$/.exec(String(rank).trim());
+    if (!m) throw new Error('級・段の書き方がちがう: ' + rank);
+    let n;
+    if (/^\d+$/.test(m[1])) n = Number(m[1]);
+    else n = m[1] === '十' ? 10 : m[1].split('').reduce((a, c) => (c === '十' ? (a || 1) * 10 : a + KANSUJI[c]), 0);
+    return m[2] === '級' ? -n : n;
+  }
+  function parseDate(s) {
+    const m = /^(\d{4})-(\d{1,2})(?:-(\d{1,2}))?$/.exec(s);
+    if (!m) throw new Error('日付の書き方がちがう: ' + s);
+    return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3] || 1));
+  }
+  function dateText(r) {
+    const d = r.d;
+    return (d.getMonth() + 1) + '月' + (r.date.split('-').length > 2 ? d.getDate() + '日' : '');
+  }
+  const DAY = 24 * 3600 * 1000;
+  function span(days) {
+    if (days < 60) return days + '日';
+    const mo = Math.round(days / 30.44);
+    return mo < 12 ? mo + 'か月' : Math.floor(mo / 12) + '年' + (mo % 12 ? (mo % 12) + 'か月' : '');
+  }
+
+  // 線の色。場所ごとに決まった順でわりあてる (ふえても前の色は変わらない)
+  const IRO = ['#b23a2e', '#2f5d8a', '#2d6a32', '#7a5510'];
+
+  function render() {
+    const body = $('kyu-body');
+    body.innerHTML = '';
+    if (KIROKU.name) $('k-title').firstChild.textContent = KIROKU.name + 'の 級の記録';
+
+    const rows = KIROKU.rows.map((r) => Object.assign({}, r, { d: parseDate(r.date), v: rankValue(r.rank), where: r.where || '' }))
+      .sort((a, b) => a.d - b.d);
+
+    if (!rows.length) {
+      const e = el('div', 'k-empty');
+      e.innerHTML = 'まだ記録がありません。<br><code>kyu.html</code> の <code>KIROKU</code> に、'
+        + '昇級した日・級・場所を 1 行ずつ書くと、ここに年表とグラフが出ます。';
+      body.appendChild(e);
+      return;
+    }
+
+    const places = [];
+    for (const r of rows) if (places.indexOf(r.where) < 0) places.push(r.where);
+    // 同じ場所の 1 つ前の記録から何日かかったか
+    const last = {};
+    for (const r of rows) {
+      const p = last[r.where];
+      r.days = p ? Math.round((r.d - p.d) / DAY) : null;
+      last[r.where] = r;
+    }
+
+    // いまの級 (いちばん新しい記録)
+    const now = rows[rows.length - 1];
+    const first = rows[0];
+    const card = el('div', 'k-now');
+    card.appendChild(el('div', 'k-now-who', 'いま'));
+    card.appendChild(el('div', 'k-now-rank', now.rank));
+    card.appendChild(el('div', 'k-now-sub',
+      now.d.getFullYear() + '年' + dateText(now) + 'に昇級' + (now.where ? '（' + now.where + '）' : '')));
+    body.appendChild(card);
+
+    const ups = rows.filter((r) => r.days !== null);
+    const stats = el('div', 'k-stats');
+    stats.style.marginTop = '11px';
+    const stat = (n, label) => { const s = el('div', 'k-stat'); s.appendChild(el('b', null, n)); s.appendChild(el('span', null, label)); stats.appendChild(s); };
+    stat(String(ups.length) + '回', '昇級・昇段');
+    stat(span(Math.round((now.d - first.d) / DAY)), first.rank + 'から');
+    stat(ups.length ? span(Math.min.apply(null, ups.map((r) => r.days))) : '—', 'いちばん早い昇級');
+    body.appendChild(stats);
+
+    body.appendChild(el('div', 'zukan-fam', 'あがってきた道'));
+    body.appendChild(chart(rows, places));
+
+    body.appendChild(el('div', 'zukan-fam', '年表'));
+    body.appendChild(nenpyo(rows, places));
+  }
+
+  /** 横が日付、たてが級の階段グラフ。上ほど強い。 */
+  function chart(rows, places) {
+    const W = 340, H = 220, L = 40, R = 12, T = 10, B = 26;
+    const t0 = rows[0].d.getTime(), t1 = Math.max(rows[rows.length - 1].d.getTime(), Date.now());
+    const vs = rows.map((r) => r.v);
+    const vlo = Math.min.apply(null, vs), vhi = Math.max.apply(null, vs);
+    // たての目盛りは、級と段のあいだ (0) を飛ばして 1 段ずつ数える
+    const step = (v) => (v > 0 ? v - 1 : v);          // 1級(-1) と 初段(1) をとなりにする
+    const lo = step(vlo) - 1, hi = step(vhi) + 1;
+    const x = (t) => L + (W - L - R) * (t1 === t0 ? 0.5 : (t - t0) / (t1 - t0));
+    const y = (v) => T + (H - T - B) * (1 - (step(v) - lo) / (hi - lo));
+    const NS = 'http://www.w3.org/2000/svg';
+    const s = (tag, attrs, text) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (text !== undefined) e.textContent = text; return e; };
+
+    const svg = s('svg', { viewBox: '0 0 ' + W + ' ' + H, class: 'k-chart', role: 'img',
+      'aria-label': '級のうつりかわりのグラフ。くわしくは下の年表を見てね' });
+
+    // たての目盛り。多すぎるときは間引く
+    const n = hi - lo;
+    const every = n > 12 ? Math.ceil(n / 8) : 1;
+    for (let k = lo + 1; k < hi; k++) {
+      const v = k >= 0 ? k + 1 : k;
+      if ((k - lo - 1) % every && k !== step(vhi)) continue;
+      const yy = y(v);
+      svg.appendChild(s('line', { x1: L, x2: W - R, y1: yy, y2: yy, class: 'grid' }));
+      svg.appendChild(s('text', { x: L - 6, y: yy + 3.5, 'text-anchor': 'end', class: 'ax' }, rankName(v)));
+    }
+    // 横の目盛り = 年
+    const y0 = new Date(t0).getFullYear(), y1 = new Date(t1).getFullYear();
+    const yEvery = Math.max(1, Math.ceil((y1 - y0 + 1) / 6));
+    for (let yr = y0; yr <= y1 + 1; yr += yEvery) {
+      const t = new Date(yr, 0, 1).getTime();
+      if (t < t0 || t > t1) continue;
+      svg.appendChild(s('text', { x: x(t), y: H - 8, 'text-anchor': 'middle', class: 'ax' }, String(yr)));
+    }
+
+    const wrap = el('div', 'k-chart-wrap');
+    const tip = el('div', 'k-tip');
+    tip.hidden = true;
+
+    places.forEach((p, i) => {
+      const pts = rows.filter((r) => r.where === p);
+      const color = IRO[i % IRO.length];
+      let d = '';
+      pts.forEach((r, j) => {
+        d += (j ? ' H' + x(r.d.getTime()) + ' V' + y(r.v) : 'M' + x(r.d.getTime()) + ' ' + y(r.v));
+      });
+      // いまの級を今日までのばす
+      d += ' H' + x(t1);
+      svg.appendChild(s('path', { d: d, class: 'ln', stroke: color }));
+      for (const r of pts) {
+        const cx = x(r.d.getTime()), cy = y(r.v);
+        svg.appendChild(s('circle', { cx: cx, cy: cy, r: 4.5, class: 'dot', fill: color }));
+        const hit = s('circle', { cx: cx, cy: cy, r: 14, class: 'hit', tabindex: 0 });
+        const show = () => {
+          tip.hidden = false;
+          tip.textContent = r.d.getFullYear() + '年' + dateText(r) + '　' + r.rank + (r.where && places.length > 1 ? '（' + r.where + '）' : '');
+          tip.style.left = (cx / W * 100) + '%';
+          tip.style.top = (cy / H * svg.getBoundingClientRect().height + 10) + 'px';
+        };
+        hit.addEventListener('pointerenter', show);
+        hit.addEventListener('focus', show);
+        hit.addEventListener('click', show);
+        hit.addEventListener('pointerleave', () => { tip.hidden = true; });
+        hit.addEventListener('blur', () => { tip.hidden = true; });
+        svg.appendChild(hit);
+      }
+    });
+
+    wrap.appendChild(svg);
+    wrap.appendChild(tip);
+    if (places.length > 1) {
+      const lg = el('div', 'k-legend');
+      places.forEach((p, i) => {
+        const it = el('span');
+        const sw = el('i');
+        sw.style.background = IRO[i % IRO.length];
+        it.appendChild(sw);
+        it.appendChild(document.createTextNode(p || '(場所なし)'));
+        lg.appendChild(it);
+      });
+      wrap.appendChild(lg);
+    }
+    return wrap;
+  }
+
+  function rankName(v) {
+    const K = ['', '初', '二', '三', '四', '五', '六', '七', '八', '九'];
+    return v < 0 ? (-v) + '級' : (K[v] || v) + '段';
+  }
+
+  /** タイトル年表と同じ見た目の、たての年表。新しいのが上。 */
+  function nenpyo(rows, places) {
+    const ol = el('ol', 'nenpyo');
+    for (let i = rows.length - 1; i >= 0; i--) {
+      const r = rows[i];
+      const li = el('li', 'n-row');
+      const yr = el('span', 'n-year');
+      yr.appendChild(el('b', null, String(r.d.getFullYear())));
+      yr.appendChild(el('span', 'k-year-md', dateText(r)));
+      li.appendChild(yr);
+      const b = el('span', 'n-body');
+      const main = el('span', 'k-main');
+      main.appendChild(el('span', 'n-name', r.rank));
+      if (r.days !== null) main.appendChild(el('span', 'k-days', span(r.days) + 'で昇級'));
+      else if (i === 0 || places.length > 1) main.appendChild(el('span', 'n-renpa', 'スタート'));
+      b.appendChild(main);
+      if (r.where && places.length > 1) b.appendChild(el('span', 'k-where', r.where));
+      if (r.memo) b.appendChild(el('span', 'k-memo', r.memo));
+      li.appendChild(b);
+      ol.appendChild(li);
+    }
+    return ol;
+  }
+
+  render();
+  window.__kyu = { rankValue: rankValue, render: render };
+})();
+</script>
+</body>
+</html>
