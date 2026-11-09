@@ -1,0 +1,258 @@
+/* ===========================================================
+   将棋ノート — 見た目 (年表・級の記録で共通)
+   和紙（かみ）の白 × 墨（すみ）の字 × 朱（しゅ）のさし色。
+   筆文字のアイコンと、棋譜ノート (kakugawari/kifu) に色をそろえてある。
+   色は :root にまとめる。
+   =========================================================== */
+
+:root {
+  --kami:     #faf8f3;          /* 地 (和紙の白) */
+  --kami-2:   #ffffff;          /* 紙 (カード) */
+  --kami-3:   #f2ece0;          /* うすい和紙 (札・見出し) */
+  --sumi:     #221c15;          /* 墨 (見出し) */
+  --sumi-2:   #453b2e;          /* 本文 */
+  --usu:      #8a8072;          /* うすい字 */
+  --sen:      #e0d7c6;          /* けい線 */
+  --sen-2:    #cfc3ac;          /* こい けい線 */
+  --wood:     #f2dfb0;          /* 駒の地 */
+  --wood-hi:  #f7e8be;
+  --wood-lo:  #ebd59f;
+  --wood-edge:#8a6a34;          /* 駒のふち */
+  --wood-line:#5e4526;
+  --wood-ink: #241c12;          /* 駒の字 */
+  --ban:      #e0bc7e;          /* 盤の木地 */
+  --momo:     #e0628a;          /* 直前の手 */
+  --shu:      #b23a2e;          /* 朱 (アイコンの「クイズ」と同じ) */
+  --shu-dark: #8b2b21;
+  --shu-usu:  #f7ece7;          /* 朱のうすい面 */
+  --ai:       #2f5d8a;          /* 藍 (✕ などのさし色) */
+  --kon:      #22406b;          /* 紺 (ずかん) */
+  --murasaki: #5b4370;          /* 紫 (年表) */
+  --cream:    #fff7e8;
+  --radius:   14px;
+  /* 紙に置いた影。濃い影より、うすく広い影のほうが和紙になじむ */
+  --shadow:   0 1px 2px rgba(80, 66, 44, .07), 0 6px 16px rgba(80, 66, 44, .08);
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+/* display を持つ要素にも hidden を効かせる (これが無いと、隠したはずの再生バーが出る) */
+[hidden] { display: none !important; }
+
+html, body { height: 100%; }
+
+body {
+  font-family: "M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", "BIZ UDPGothic",
+               "Hiragino Kaku Gothic ProN", system-ui, sans-serif;
+  font-weight: 700;
+  color: var(--sumi-2);
+  background-color: var(--kami);
+  /* 和紙の地。ごく薄い縦の繊維と、すみに落とした墨のにじみ */
+  background-image:
+    radial-gradient(circle at 88% 4%, rgba(130, 110, 80, .07), transparent 42%),
+    radial-gradient(circle at 6% 96%, rgba(178, 58, 46, .045), transparent 40%),
+    repeating-linear-gradient(97deg, rgba(150, 130, 95, .035) 0 1px, transparent 1px 6px);
+  background-attachment: fixed;
+  -webkit-text-size-adjust: 100%;
+  display: flex;
+  justify-content: center;
+  min-height: 100dvh;
+}
+
+#app {
+  width: 100%;
+  max-width: 540px;
+  padding: max(14px, env(safe-area-inset-top)) 14px calc(28px + env(safe-area-inset-bottom));
+}
+
+.screen { display: none; flex-direction: column; gap: 11px; }
+.screen.is-active { display: flex; animation: rise .32s cubic-bezier(.2, .8, .3, 1); }
+@keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+/* ---------------- HUD ---------------- */
+
+.hud { display: flex; align-items: center; gap: 8px; }
+.hud-count { font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif; font-size: 1rem; color: var(--sumi); letter-spacing: .06em; }
+.hud-score { margin-left: auto; font-size: .74rem; color: var(--usu); background: var(--kami-2); border: 1px solid var(--sen); border-radius: 999px; padding: 5px 13px; }
+.hud-score b { color: var(--shu); font-size: 1rem; }
+
+.icon-btn {
+  width: 34px; height: 34px; flex: 0 0 auto;
+  display: grid; place-items: center;
+  font: inherit; font-size: .9rem; color: var(--sumi-2); cursor: pointer;
+  background: var(--kami-2); border: 1px solid var(--sen); border-radius: 11px;
+}
+.icon-btn:active { transform: translateY(2px); }
+
+/* ---------------- タブ・見出し ---------------- */
+
+.tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.tab {
+  font: inherit; font-weight: 700; font-size: .86rem; cursor: pointer; padding: 9px 4px;
+  color: var(--usu); background: var(--kami-2); border: 1px solid var(--sen); border-radius: 11px;
+}
+.tab.is-on { color: #fff; background: var(--shu); border-color: var(--shu-dark); }
+.zukan-note { font-size: .74rem; font-weight: 500; color: var(--usu); line-height: 1.7; text-align: center; }
+.zukan-fam {
+  font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif; font-size: .98rem; color: var(--sumi);
+  letter-spacing: .08em;
+  display: flex; align-items: center; gap: 10px; margin: 16px 0 4px;
+}
+.zukan-fam::after { content: ""; flex: 1; height: 1px; background: var(--sen-2); }
+
+  font-family: "Shippori Mincho B1", serif; }
+@keyframes fall { to { transform: translateY(112vh) rotate(680deg); opacity: .85; } }
+
+/* ---------------- 年表（歴代タイトルホルダー） ---------------- */
+
+/* 棋戦は 8 つまで増える。3 列固定だとあふれるので、幅に合わせて折り返す */
+#nenpyo-tabs { grid-template-columns: repeat(auto-fit, minmax(64px, 1fr)); }
+
+.n-range {
+  margin: 10px 0 0; padding: 7px 10px; border-radius: 10px;
+  font-size: .7rem; font-weight: 500; text-align: center; line-height: 1.6;
+  color: var(--murasaki); background: #f4f0f7; border: 1px solid #e2d8ea;
+}
+
+/* 朱のたて線に、年を古い順に打っていく */
+.nenpyo { list-style: none; margin: 18px 0 0; padding: 0 0 0 4px; position: relative; }
+.nenpyo::before {
+  content: ""; position: absolute; left: 62px; top: 6px; bottom: 6px; width: 2px;
+  background: linear-gradient(180deg, var(--sen-2), var(--shu) 12%, var(--shu) 88%, var(--sen-2));
+  opacity: .5;
+}
+.n-row { display: flex; align-items: flex-start; gap: 20px; padding: 0 0 8px; position: relative; }
+/* 連覇は、札の左に朱の帯を引いてひとつづきに見せる */
+.n-row.is-run .n-body { border-left: 4px solid var(--shu); border-radius: 4px 11px 11px 4px; }
+.n-row.is-run { padding-bottom: 3px; }
+.n-row.is-run-bottom { padding-bottom: 8px; }
+.n-row::before {                       /* たて線の上に置く節 */
+  content: ""; position: absolute; left: 58px; top: 7px; width: 10px; height: 10px;
+  border-radius: 50%; background: var(--kami); border: 2px solid var(--shu); z-index: 1;
+}
+.n-year {
+  width: 50px; flex: none; text-align: right; padding-top: 1px;
+  display: flex; flex-direction: column; align-items: flex-end; line-height: 1.25;
+}
+.n-year b {
+  font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif;
+  font-size: .88rem; font-weight: 700; color: var(--sumi-2); letter-spacing: .02em;
+}
+.n-dash { font-size: .62rem; color: var(--usu); line-height: 1; }
+.n-body {
+  flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 9px;
+  background: var(--kami-2); border: 1px solid var(--sen); border-radius: 11px;
+  box-shadow: var(--shadow); padding: 7px 12px 8px;
+}
+.n-name {
+  font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif;
+  font-size: 1.06rem; font-weight: 700; color: var(--sumi); letter-spacing: .04em;
+}
+.n-ki { font-size: .7rem; font-weight: 500; color: var(--usu); }
+.n-renpa {
+  font-size: .68rem; font-weight: 700; color: #fff; background: var(--shu);
+  border-radius: 999px; padding: 2px 8px; letter-spacing: .04em;
+}
+.n-gap {
+  margin: 0 0 14px 82px; padding: 6px 12px; border-radius: 10px;
+  font-size: .7rem; font-weight: 500; line-height: 1.6; color: var(--usu);
+  background: var(--kami-3); border: 1px dashed var(--sen-2);
+}
+.n-gap b {
+  font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif;
+  color: var(--sumi-2); margin-right: 8px;
+}
+/* --- 8つのタイトルを横にならべた表 --- */
+.n-grid-wrap { margin-top: 16px; }
+.n-grid { border-collapse: collapse; width: 100%; table-layout: fixed; }
+.n-grid th, .n-grid td { border: 1px solid #fff; padding: 0; }
+.n-gh {                                   /* 赤い見出し。スクロールしても残る */
+  position: sticky; top: 0; z-index: 2;
+  font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif;
+  font-size: .78rem; font-weight: 700; letter-spacing: .04em;
+  color: #fff; background: var(--shu); border-color: var(--shu-dark);
+  padding: 7px 0; white-space: nowrap;
+}
+.n-gy {
+  /* 高さは行の下限。まるごと空の年 (戦争中など) だけ細くならないように */
+  width: 34px; height: 30px;
+  font-size: .6rem; font-weight: 700; color: var(--shu-dark);
+  background: var(--cream); text-align: center; white-space: nowrap;
+  border-color: #f0e2c8;
+}
+.n-gh.n-gy { font-size: .7rem; color: #fff; background: var(--shu); border-color: var(--shu-dark); }
+.n-cell {
+  text-align: center; vertical-align: middle; cursor: pointer;
+  background: var(--kami-2); color: var(--sumi-2); padding: 3px 0;
+}
+/* その棋戦がまだ無かった年 */
+.n-none { background: repeating-linear-gradient(45deg, #f7f4ee, #f7f4ee 3px, #ece7dc 3px, #ece7dc 6px); }
+/* これから指す年 (勝負がついていない) */
+.n-mada {
+  background: var(--kami); color: var(--usu);
+  font-size: .66rem; font-weight: 700; text-align: center; letter-spacing: .04em;
+}
+/* 名前は姓と名で行を分ける (どこで切るかは app.js が決める)。幅まかせに
+   折り返すと「森雞 / 二」「加藤一 / 二三」と、変なところで切れてしまう。
+   writing-mode は表のマスの中では使えない (字送りが 0 になる。落とし穴の表を見よ) */
+.n-nm {
+  display: block; margin: 0 auto;
+  font-size: .78rem; font-weight: 700; line-height: 1.12; letter-spacing: 0;
+}
+.n-nm span { display: block; }
+/* 3 文字ならぶ行 (加藤 / 一二三 の下の行など) は、そのままだとマスからはみ出す */
+.n-nm.is-long { font-size: .7rem; }
+.n-cell.is-pick { outline: 2px solid var(--sumi); outline-offset: -2px; }
+.n-pick {
+  margin: 10px 0 0; padding: 9px 12px; border-radius: 10px;
+  font-size: .92rem; font-weight: 700; text-align: center; line-height: 1.6;
+  color: var(--sumi); background: var(--cream); border: 1px solid var(--sen-2);
+}
+.n-legend { list-style: none; margin: 0; padding: 0; }
+.n-legend li {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 12px; border-bottom: 1px solid var(--sen);
+}
+.n-legend li:last-child { border-bottom: 0; }
+.n-legend .n-name { font-size: .9rem; flex: 1; }
+.n-chip { width: 20px; height: 20px; border-radius: 6px; border: 2px solid var(--sen-2); flex: none; }
+.n-shiro {
+  margin: 12px 0 0; padding: 9px 12px; border-radius: 10px;
+  font-size: .76rem; line-height: 1.8; color: var(--sumi-2); text-align: center;
+  background: var(--kami-2); border: 1px solid var(--sen);
+}
+.n-chip-in { display: inline-block; vertical-align: -4px; margin-right: 6px; }
+
+.n-tally { list-style: none; margin: 0; padding: 0; }
+.n-tally li {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+  padding: 9px 12px; border-bottom: 1px solid var(--sen);
+}
+.n-tally li:last-child { border-bottom: 0; }
+.n-tally .n-name { font-size: .98rem; }
+
+/* ---------------- ページのあいだの行き来 ---------------- */
+
+.site-head { text-align: center; padding: 6px 0 2px; }
+.site-title {
+  font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif;
+  font-size: 1.5rem; color: var(--sumi); letter-spacing: .1em;
+}
+.site-title small { display: block; font-family: inherit; font-size: .72rem; color: var(--usu); letter-spacing: .2em; margin-top: 2px; }
+.site-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+.site-nav a {
+  display: block; text-align: center; text-decoration: none; padding: 9px 4px;
+  font-size: .86rem; color: var(--sumi-2); background: var(--kami-2);
+  border: 1px solid var(--sen); border-radius: 11px; box-shadow: var(--shadow);
+}
+.site-nav a[aria-current="page"] { color: #fff; background: var(--murasaki); border-color: var(--murasaki); box-shadow: none; }
+
+button:focus-visible, .tab:focus-visible, a:focus-visible { outline: 3px solid var(--shu); outline-offset: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+
+
+#app > .screen { margin-top: 12px; }
