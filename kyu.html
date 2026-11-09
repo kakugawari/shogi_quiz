@@ -98,7 +98,7 @@
  *   memo  … ひとこと (なくてもよい)
  */
 const KIROKU = {
-  name: '',            // グラフの上に出す名前 (よび名でよい)。空ならださない
+  name: 'カピバライダー', // ページの上に出す名前 (よび名でよい)。空ならださない
   rows: [
     // { date: '2024-04-14', rank: '15級', where: '〇〇将棋教室', memo: 'はじめての級' },
   ]
@@ -146,7 +146,10 @@ const KIROKU = {
   function render() {
     const body = $('kyu-body');
     body.innerHTML = '';
-    if (KIROKU.name) $('k-title').firstChild.textContent = KIROKU.name + 'の 級の記録';
+    if (KIROKU.name) {
+      $('k-title').firstChild.textContent = KIROKU.name + 'の 級の記録';
+      document.title = KIROKU.name + 'の 級の記録';
+    }
 
     const rows = KIROKU.rows.map((r) => Object.assign({}, r, { d: parseDate(r.date), v: rankValue(r.rank), where: r.where || '' }))
       .sort((a, b) => a.d - b.d);
