@@ -19,6 +19,21 @@
 <style>
 /* ---------------- 級の記録 ---------------- */
 
+.k-nenpyo .k-yhead {
+  display: flex; align-items: baseline; gap: 10px; margin: 6px 0 10px -4px; position: relative;
+}
+.k-nenpyo .k-yhead:not(:first-child) { margin-top: 16px; }
+.k-yhead b {
+  font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif; font-size: 1.05rem;
+  color: #fff; background: var(--shu); border-radius: 999px; padding: 3px 14px; letter-spacing: .06em;
+}
+.k-yhead span { font-size: .74rem; font-weight: 500; color: var(--usu); }
+.k-md b { font-family: "M PLUS Rounded 1c", system-ui, sans-serif; font-size: .9rem; }
+.k-fast { background: var(--shu-usu); color: var(--shu); }
+.k-bar { display: flex; align-items: center; gap: 8px; width: 100%; margin-top: 6px; }
+.k-bar i { display: block; height: 6px; border-radius: 3px; background: var(--sen-2); flex: none; max-width: calc(100% - 72px); }
+.k-bar-t { font-size: .72rem; font-weight: 500; color: var(--usu); white-space: nowrap; }
+
 .k-now {
   text-align: center; background: var(--kami-2); border: 1px solid var(--sen);
   border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px 12px 14px;
@@ -30,7 +45,7 @@
 }
 .k-now-sub { font-size: .76rem; font-weight: 500; color: var(--sumi-2); line-height: 1.8; }
 
-.k-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.k-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
 .k-stat {
   background: var(--kami-2); border: 1px solid var(--sen); border-radius: 11px;
   padding: 9px 4px; text-align: center;
@@ -99,9 +114,24 @@
  *   memo  … ひとこと (なくてもよい)
  */
 const KIROKU = {
-  name: 'カピバライダー', // ページの上に出す名前 (よび名でよい)。空ならださない
+  title: 'ひなの歴史',  // ページの見出し。空なら「級の記録」
   rows: [
     // { date: '2024-04-14', rank: '15級', where: '〇〇将棋教室', memo: 'はじめての級' },
+    { date: '2024-09-29', rank: '17級' },  // 令和6年9月29日
+    { date: '2024-11-10', rank: '16級' },  // 令和6年11月10日
+    { date: '2024-12-26', rank: '15級' },  // 令和6年12月26日
+    { date: '2024-12-29', rank: '14級' },  // 令和6年12月29日
+    { date: '2025-01-25', rank: '13級' },  // 令和7年1月25日
+    { date: '2025-05-25', rank: '12級' },  // 令和7年5月25日
+    { date: '2025-06-22', rank: '11級' },  // 令和7年6月22日
+    { date: '2025-06-30', rank: '10級' },  // 令和7年6月30日
+    { date: '2025-10-26', rank: '9級' },  // 令和7年10月26日
+    { date: '2025-10-31', rank: '8級' },  // 令和7年10月31日
+    { date: '2026-02-26', rank: '7級' },  // 令和8年2月26日
+    { date: '2026-05-26', rank: '6級' },  // 令和8年5月26日
+    { date: '2026-07-12', rank: '5級' },  // 令和8年7月12日
+    { date: '2026-09-25', rank: '4級' },  // 令和8年9月25日
+    { date: '2026-10-18', rank: '3級' },  // 令和8年10月18日
   ]
 };
 
@@ -147,9 +177,9 @@ const KIROKU = {
   function render() {
     const body = $('kyu-body');
     body.innerHTML = '';
-    if (KIROKU.name) {
-      $('k-title').firstChild.textContent = KIROKU.name + 'の 級の記録';
-      document.title = KIROKU.name + 'の 級の記録';
+    if (KIROKU.title) {
+      $('k-title').firstChild.textContent = KIROKU.title;
+      document.title = KIROKU.title + ' - ひな将棋';
     }
 
     const rows = KIROKU.rows.map((r) => Object.assign({}, r, { d: parseDate(r.date), v: rankValue(r.rank), where: r.where || '' }))
@@ -187,8 +217,9 @@ const KIROKU = {
     const stats = el('div', 'k-stats');
     stats.style.marginTop = '11px';
     const stat = (n, label) => { const s = el('div', 'k-stat'); s.appendChild(el('b', null, n)); s.appendChild(el('span', null, label)); stats.appendChild(s); };
-    stat(String(ups.length) + '回', '昇級・昇段');
+    stat(String(ups.length) + '回', rows.some((r) => r.v > 0) ? '昇級・昇段' : '昇級');
     stat(span(Math.round((now.d - first.d) / DAY)), first.rank + 'から');
+    stat(ups.length ? span(Math.round(ups.reduce((a, r) => a + r.days, 0) / ups.length)) : '—', '1つあがるのに (平均)');
     stat(ups.length ? span(Math.min.apply(null, ups.map((r) => r.days))) : '—', 'いちばん早い昇級');
     body.appendChild(stats);
 
@@ -291,21 +322,42 @@ const KIROKU = {
   }
 
   /** タイトル年表と同じ見た目の、たての年表。新しいのが上。 */
+  /** タイトル年表と同じ見た目の、たての年表。新しいのが上。年ごとに見出しで区切る */
   function nenpyo(rows, places) {
-    const ol = el('ol', 'nenpyo');
+    const ol = el('ol', 'nenpyo k-nenpyo');
+    // かかった日数の棒は、いちばん長くかかった回を 100% にする
+    const maxDays = Math.max.apply(null, rows.map((r) => r.days || 0)) || 1;
+    let year = null;
     for (let i = rows.length - 1; i >= 0; i--) {
       const r = rows[i];
+      const y = r.d.getFullYear();
+      if (y !== year) {
+        year = y;
+        const n = rows.filter((x) => x.d.getFullYear() === y && x.days !== null).length;
+        const h = el('li', 'k-yhead');
+        h.appendChild(el('b', null, y + '年'));
+        if (n) h.appendChild(el('span', null, n + '回 昇級'));
+        ol.appendChild(h);
+      }
       const li = el('li', 'n-row');
-      const yr = el('span', 'n-year');
-      yr.appendChild(el('b', null, String(r.d.getFullYear())));
-      yr.appendChild(el('span', 'k-year-md', dateText(r)));
+      const yr = el('span', 'n-year k-md');
+      yr.appendChild(el('b', null, (r.d.getMonth() + 1) + '/' + (r.date.split('-').length > 2 ? r.d.getDate() : '')));
       li.appendChild(yr);
       const b = el('span', 'n-body');
       const main = el('span', 'k-main');
       main.appendChild(el('span', 'n-name', r.rank));
-      if (r.days !== null) main.appendChild(el('span', 'k-days', span(r.days) + 'で昇級'));
-      else if (i === 0 || places.length > 1) main.appendChild(el('span', 'n-renpa', 'スタート'));
+      if (r.days !== null && r.days <= 14) main.appendChild(el('span', 'n-renpa k-fast', 'スピード昇級'));
+      if (r.days === null) main.appendChild(el('span', 'n-renpa', 'スタート'));
       b.appendChild(main);
+      if (r.days !== null) {
+        const bar = el('span', 'k-bar');
+        const fill = el('i');
+        fill.style.width = Math.max(4, r.days / maxDays * 100) + '%';
+        bar.appendChild(fill);
+        bar.appendChild(el('span', 'k-bar-t', span(r.days)));
+        bar.title = (rows[i - 1] ? rows[i - 1].rank : '') + 'から ' + r.days + '日';
+        b.appendChild(bar);
+      }
       if (r.where && places.length > 1) b.appendChild(el('span', 'k-where', r.where));
       if (r.memo) b.appendChild(el('span', 'k-memo', r.memo));
       li.appendChild(b);
@@ -313,6 +365,7 @@ const KIROKU = {
     }
     return ol;
   }
+
 
   render();
   window.__kyu = { rankValue: rankValue, render: render };
