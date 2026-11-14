@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>勝率チェック</title>
+<meta name="description" content="リーグ戦の勝ち・負けの数から、勝率と勝ち越しをすぐに出す">
+<meta name="theme-color" content="#faf8f3">
+<link rel="icon" href="./icon-192.png">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="将棋年表">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="manifest" href="./app.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800&family=Shippori+Mincho+B1:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./site.css">
+<style>
+/* ---------------- 勝率チェック ---------------- */
+
+/* 勝ちは朱、負けは藍。○● の印とそろえる */
+:root { --kachi: var(--shu); --make: var(--ai); --row: 56px; }
+
+.r-card {
+  background: var(--kami-2); border: 1px solid var(--sen); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 14px 12px 16px; text-align: center;
+}
+.r-label { font-size: .76rem; color: var(--usu); letter-spacing: .3em; }
+.r-rate {
+  font-family: "M PLUS Rounded 1c", system-ui, sans-serif; font-weight: 800;
+  font-size: clamp(4.2rem, 24vw, 6.6rem); line-height: 1.05; color: var(--sumi);
+  letter-spacing: -.02em; font-variant-numeric: tabular-nums;
+}
+.r-rate.is-none { color: var(--sen-2); }
+.r-meta { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
+.r-chip { font-size: .9rem; padding: 6px 16px; border-radius: 999px; background: var(--kami-3); color: var(--sumi-2); }
+.r-chip.is-kachi { background: var(--shu-usu); color: var(--kachi); }
+.r-chip.is-make { background: #e6edf5; color: var(--make); }
+.r-total { font-size: .86rem; color: var(--usu); }
+.r-total b { font-size: 1.2rem; color: var(--sumi); margin: 0 2px; }
+.r-next { margin-top: 10px; font-size: .74rem; font-weight: 500; color: var(--usu); line-height: 1.7; }
+.r-next b { font-weight: 700; }
+.r-next .k { color: var(--kachi); }
+.r-next .m { color: var(--make); }
+
+.r-drums { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.r-col {
+  background: var(--kami-2); border: 1px solid var(--sen); border-radius: var(--radius);
+  box-shadow: var(--shadow); overflow: hidden; display: flex; flex-direction: column;
+}
+.r-head {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 11px 0 10px; border-bottom: 1px solid var(--sen); font-size: 1rem; color: var(--sumi);
+}
+.r-mark { width: 18px; height: 18px; border-radius: 50%; }
+.is-kachi .r-mark { border: 2.5px solid var(--kachi); }
+.is-make .r-mark { background: var(--make); }
+
+.r-step {
+  font: inherit; font-size: .8rem; color: var(--usu); background: none; border: 0; cursor: pointer;
+  padding: 8px 0; width: 100%;
+}
+.r-step:active { color: var(--sumi); }
+
+/* ドラム本体。ネイティブのスクロールに吸着させて、指で回したときの慣性をそのまま使う */
+.drum { position: relative; height: calc(var(--row) * 5); }
+.drum-band {                         /* まん中の帯。数字の下に敷く */
+  position: absolute; left: 10px; right: 10px; top: calc(var(--row) * 2); height: var(--row);
+  border-radius: 12px; pointer-events: none;
+}
+.is-kachi .drum-band { background: var(--shu-usu); }
+.is-make .drum-band { background: #e9eef5; }
+.drum-scroll {
+  position: absolute; inset: 0; overflow-y: scroll; scroll-snap-type: y mandatory;
+  scrollbar-width: none; overscroll-behavior: contain; outline: none;
+  -webkit-mask-image: linear-gradient(transparent, #000 28%, #000 72%, transparent);
+          mask-image: linear-gradient(transparent, #000 28%, #000 72%, transparent);
+}
+.drum-scroll::-webkit-scrollbar { display: none; }
+.drum-pad { height: calc(var(--row) * 2); }
+.drum-item {
+  height: var(--row); display: grid; place-items: center; scroll-snap-align: center;
+  font-family: "M PLUS Rounded 1c", system-ui, sans-serif; font-weight: 700; font-size: 2rem;
+  color: var(--usu); cursor: pointer; font-variant-numeric: tabular-nums;
+  transform-origin: center; will-change: transform, opacity; user-select: none;
+}
+.drum-item.is-on { font-weight: 800; font-size: 2.6rem; }
+.is-kachi .drum-item.is-on { color: var(--kachi); }
+.is-make .drum-item.is-on { color: var(--make); }
+.drum-scroll:focus-visible + .drum-ring { display: block; }
+.drum-ring {
+  display: none; position: absolute; left: 10px; right: 10px; top: calc(var(--row) * 2); height: var(--row);
+  border: 3px solid var(--shu); border-radius: 12px; pointer-events: none;
+}
+
+.r-foot { display: flex; align-items: center; gap: 10px; }
+.r-hint { flex: 1; font-size: .72rem; font-weight: 500; color: var(--usu); line-height: 1.7; }
+.r-reset {
+  font: inherit; font-size: .86rem; color: var(--sumi-2); cursor: pointer; padding: 10px 18px;
+  background: var(--kami-2); border: 1px solid var(--sen-2); border-radius: 999px; box-shadow: var(--shadow);
+}
+.r-reset:active { transform: translateY(1px); }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <header class="site-head">
+    <h1 class="site-title">勝率チェック<small>リーグ戦の しょうりつ</small></h1>
+    <nav class="site-nav">
+      <a href="./">タイトル年表</a>
+      <a href="./kyu.html">級の記録</a>
+      <a href="./shoritsu.html" aria-current="page">勝率チェック</a>
+    </nav>
+  </header>
+
+  <section class="screen is-active" id="screen-rate">
+    <div class="r-card" aria-live="polite">
+      <div class="r-label">勝率</div>
+      <div class="r-rate" id="rate">—</div>
+      <div class="r-meta">
+        <span class="r-chip" id="chip">まだ 0 局</span>
+        <span class="r-total">全<b id="total">0</b>局</span>
+      </div>
+      <p class="r-next" id="next"></p>
+    </div>
+
+    <div class="r-drums">
+      <div class="r-col is-kachi" id="col-win"></div>
+      <div class="r-col is-make" id="col-lose"></div>
+    </div>
+
+    <div class="r-foot">
+      <p class="r-hint">数字を上下にスワイプ。<br>タップや ▲▼ でも選べるよ</p>
+      <button class="r-reset" id="reset" type="button">0に戻す</button>
+    </div>
+  </section>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  const $ = (id) => document.getElementById(id);
+  const MAX = 99;
+  const STORE = 'shogi-nenpyo/shoritsu';
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function el(tag, cls, text) {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text !== undefined) e.textContent = text;
+    return e;
+  }
+
+  /** 勝率は将棋のならわしどおり小数3けた (0.667)。0局のときは出さない */
+  function rateText(w, l) {
+    if (w + l === 0) return '—';
+    return (w / (w + l)).toFixed(3);
+  }
+
+  /**
+   * ドラム式の数字えらび。
+   * ふつうのスクロールに scroll-snap で吸着させ、まん中に来た数字を「えらんだ数」とする。
+   * 上下の数字は、まん中からの距離に合わせて小さく・うすく・寝かせて、筒が回っているように見せる。
+   */
+  function makeDrum(col, label, mark, onChange) {
+    const head = el('div', 'r-head');
+    head.appendChild(el('span', 'r-mark'));
+    head.appendChild(document.createTextNode(label));
+    col.appendChild(head);
+
+    const up = el('button', 'r-step', '▲');
+    up.type = 'button';
+    up.setAttribute('aria-label', label + 'を1へらす');
+    col.appendChild(up);
+
+    const drum = el('div', 'drum');
+    drum.appendChild(el('div', 'drum-band'));
+    const sc = el('div', 'drum-scroll');
+    sc.tabIndex = 0;
+    sc.setAttribute('role', 'spinbutton');
+    sc.setAttribute('aria-label', label + 'の数');
+    sc.setAttribute('aria-valuemin', '0');
+    sc.setAttribute('aria-valuemax', String(MAX));
+    sc.appendChild(el('div', 'drum-pad'));
+    const items = [];
+    for (let i = 0; i <= MAX; i++) {
+      const it = el('div', 'drum-item', String(i));
+      it.addEventListener('click', () => set(i, true));
+      sc.appendChild(it);
+      items.push(it);
+    }
+    sc.appendChild(el('div', 'drum-pad'));
+    drum.appendChild(sc);
+    drum.appendChild(el('div', 'drum-ring'));
+    col.appendChild(drum);
+
+    const down = el('button', 'r-step', '▼');
+    down.type = 'button';
+    down.setAttribute('aria-label', label + 'を1ふやす');
+    col.appendChild(down);
+
+    let value = 0;
+    let target = null;      // ▲▼ を続けて押したとき、回っている途中の数ではなく行き先から数える
+    let raf = 0;
+    const rowH = () => items[0].offsetHeight;
+
+    function paint() {
+      raf = 0;
+      const h = rowH();
+      const pos = sc.scrollTop / h;              // いまの位置 (小数)
+      const near = Math.round(pos);
+      const from = Math.max(0, near - 4), to = Math.min(MAX, near + 4);
+      for (let i = from; i <= to; i++) {
+        const d = i - pos;                       // まん中からの距離 (段)
+        const a = Math.min(Math.abs(d), 2.6);
+        const it = items[i];
+        it.style.opacity = String(Math.max(0.12, 1 - a * 0.36));
+        it.style.transform = reduce ? '' : 'perspective(300px) rotateX(' + (-d * 22).toFixed(1) + 'deg) scale(' + (1 - a * 0.08).toFixed(3) + ')';
+        it.classList.toggle('is-on', i === near);
+      }
+      // ちょうど止まった数を反映する (吸着の途中でもまん中に来た数で計算を出す)
+      if (near !== value && near >= 0 && near <= MAX) {
+        value = near;
+        sc.setAttribute('aria-valuenow', String(value));
+        if (navigator.vibrate) { try { navigator.vibrate(4); } catch (e) { /* できない端末は無視 */ } }
+        onChange(value);
+      }
+      if (target === value) target = null;
+    }
+    sc.addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(paint); }, { passive: true });
+
+    function set(v, smooth) {
+      v = Math.max(0, Math.min(MAX, v));
+      target = smooth ? v : null;
+      sc.scrollTo({ top: v * rowH(), behavior: smooth && !reduce ? 'smooth' : 'auto' });
+      if (!smooth) paint();
+    }
+    const base = () => (target === null ? value : target);
+    up.addEventListener('click', () => set(base() - 1, true));
+    down.addEventListener('click', () => set(base() + 1, true));
+    sc.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowUp') { set(base() - 1, true); e.preventDefault(); }
+      if (e.key === 'ArrowDown') { set(base() + 1, true); e.preventDefault(); }
+    });
+    // 指やホイールで回しはじめたら、行き先の予約はすてる
+    for (const ev of ['touchstart', 'wheel', 'pointerdown']) sc.addEventListener(ev, () => { target = null; }, { passive: true });
+    return { set: set, get: () => value, paint: paint };
+  }
+
+  let win = 0, lose = 0;
+  function update() {
+    const n = win + lose;
+    const r = $('rate');
+    r.textContent = rateText(win, lose);
+    r.classList.toggle('is-none', n === 0);
+    $('total').textContent = String(n);
+    const chip = $('chip');
+    const sa = win - lose;
+    chip.className = 'r-chip' + (sa > 0 ? ' is-kachi' : sa < 0 ? ' is-make' : '');
+    chip.textContent = n === 0 ? 'まだ 0 局' : sa > 0 ? sa + 'つ 勝ち越し' : sa < 0 ? (-sa) + 'つ 負け越し' : '五分（指し分け）';
+
+    // つぎの1局でどうなるか
+    const next = $('next');
+    next.innerHTML = '';
+    next.append('つぎ ');
+    const k = el('b', 'k', '勝てば ' + rateText(win + 1, lose));
+    const m = el('b', 'm', '負ければ ' + rateText(win, lose + 1));
+    next.append(k, '　／　', m);
+    try { localStorage.setItem(STORE, JSON.stringify({ win: win, lose: lose })); } catch (e) { /* 保存できなくても動く */ }
+  }
+
+  const dw = makeDrum($('col-win'), '勝ち', '○', (v) => { win = v; update(); });
+  const dl = makeDrum($('col-lose'), '負け', '●', (v) => { lose = v; update(); });
+
+  $('reset').addEventListener('click', () => { dw.set(0, true); dl.set(0, true); });
+
+  // 前に開いたときの数をもどす (この端末だけ)
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(STORE) || 'null'); } catch (e) { saved = null; }
+  requestAnimationFrame(() => {
+    dw.set(saved && Number.isInteger(saved.win) ? saved.win : 0, false);
+    dl.set(saved && Number.isInteger(saved.lose) ? saved.lose : 0, false);
+    dw.paint(); dl.paint();
+    update();
+  });
+
+  window.__rate = { win: dw, lose: dl, rateText: rateText };
+})();
+</script>
+</body>
+</html>
