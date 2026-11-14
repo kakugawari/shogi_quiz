@@ -45,7 +45,12 @@
 }
 .k-now-sub { font-size: .76rem; font-weight: 500; color: var(--sumi-2); line-height: 1.8; }
 
-.k-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.k-stats { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+.k-stats > * { grid-column: span 2; }          /* 上の段は 3 つ */
+.k-stats > .is-wide { grid-column: span 3; }   /* 下の段 (早い・長い) は 2 つ */
+.k-stat small { display: block; font-size: .78rem; font-weight: 700; color: var(--sumi-2); margin-top: 1px; }
+.k-stat.is-hayai b { color: var(--shu); }
+.k-stat.is-nagai b { color: var(--ai); }
 .k-stat {
   background: var(--kami-2); border: 1px solid var(--sen); border-radius: 11px;
   padding: 9px 4px; text-align: center;
@@ -216,11 +221,24 @@ const KIROKU = {
     const ups = rows.filter((r) => r.days !== null);
     const stats = el('div', 'k-stats');
     stats.style.marginTop = '11px';
-    const stat = (n, label) => { const s = el('div', 'k-stat'); s.appendChild(el('b', null, n)); s.appendChild(el('span', null, label)); stats.appendChild(s); };
+    const stat = (n, label, cls, sub) => {
+      const s = el('div', 'k-stat' + (cls ? ' ' + cls : ''));
+      s.appendChild(el('b', null, n));
+      if (sub) s.appendChild(el('small', null, sub));
+      s.appendChild(el('span', null, label));
+      stats.appendChild(s);
+    };
     stat(String(ups.length) + '回', rows.some((r) => r.v > 0) ? '昇級・昇段' : '昇級');
     stat(span(Math.round((now.d - first.d) / DAY)), first.rank + 'から');
-    stat(ups.length ? span(Math.round(ups.reduce((a, r) => a + r.days, 0) / ups.length)) : '—', '1つあがるのに (平均)');
-    stat(ups.length ? span(Math.min.apply(null, ups.map((r) => r.days))) : '—', 'いちばん早い昇級');
+    stat(ups.length ? Math.round(ups.reduce((a, r) => a + r.days, 0) / ups.length) + '日' : '—', '1つあがるのに (平均)');
+    if (ups.length) {
+      // 同じ日数の級が2つ以上あれば、ならべて出す
+      const hayai = Math.min.apply(null, ups.map((r) => r.days));
+      const nagai = Math.max.apply(null, ups.map((r) => r.days));
+      const kyuOf = (d) => ups.filter((r) => r.days === d).map((r) => r.rank).join('・');
+      stat(hayai + '日', 'いちばん早かった昇級', 'is-wide is-hayai', kyuOf(hayai));
+      stat(nagai + '日', 'いちばん長かった昇級', 'is-wide is-nagai', kyuOf(nagai));
+    }
     body.appendChild(stats);
 
     body.appendChild(el('div', 'zukan-fam', 'あがってきた道'));
@@ -362,7 +380,7 @@ const KIROKU = {
         const fill = el('i');
         fill.style.width = Math.max(4, r.days / maxDays * 100) + '%';
         bar.appendChild(fill);
-        bar.appendChild(el('span', 'k-bar-t', span(r.days)));
+        bar.appendChild(el('span', 'k-bar-t', r.days + '日'));
         bar.title = (rows[i - 1] ? rows[i - 1].rank : '') + 'から ' + r.days + '日';
         b.appendChild(bar);
       }
