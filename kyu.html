@@ -346,7 +346,15 @@ const KIROKU = {
       const b = el('span', 'n-body');
       const main = el('span', 'k-main');
       main.appendChild(el('span', 'n-name', r.rank));
-      if (r.days !== null && r.days <= 14) main.appendChild(el('span', 'n-renpa k-fast', 'スピード昇級'));
+      // 同じ月に2回目 (3回目) の昇級なら「ダブル昇級」(「トリプル昇級」)。
+      // それ以外で前の級から14日以内なら「スピード昇級」
+      const kaime = rows.filter((x, j) => j <= i && x.where === r.where && x.days !== null
+        && x.d.getFullYear() === r.d.getFullYear() && x.d.getMonth() === r.d.getMonth()).length
+        + (rows.some((x, j) => j < i && x.where === r.where && x.days === null
+          && x.d.getFullYear() === r.d.getFullYear() && x.d.getMonth() === r.d.getMonth()) ? 1 : 0);
+      const BAI = { 2: 'ダブル', 3: 'トリプル' };
+      if (r.days !== null && kaime >= 2) main.appendChild(el('span', 'n-renpa k-fast', (BAI[kaime] || kaime + '回目の') + '昇級'));
+      else if (r.days !== null && r.days <= 14) main.appendChild(el('span', 'n-renpa k-fast', 'スピード昇級'));
       if (r.days === null) main.appendChild(el('span', 'n-renpa', 'スタート'));
       b.appendChild(main);
       if (r.days !== null) {
