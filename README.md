@@ -1,6 +1,6 @@
-# 将棋 タイトル年表 / 級の記録
+# 将棋 タイトル年表 / 級の記録 / 勝率チェック
 
-GitHub Pages で公開している、2 枚のページです。
+GitHub Pages で公開している、3 枚のページです。
 
 **https://kakugawari.github.io/shogi_quiz/**
 
@@ -8,7 +8,8 @@ GitHub Pages で公開している、2 枚のページです。
 |---|---|
 | `index.html` | 将棋の歴代タイトルホルダーの年表 (8 タイトルを横にならべた表と、棋戦ごとの年表) |
 | `kyu.html` | 子どもの級位・段位があがってきた記録 (いまの級、グラフ、年表) |
-| `site.css` | 2 枚で共通の見た目 |
+| `shoritsu.html` | リーグ戦の勝率チェック。勝ち・負けの数をドラムで回して選ぶ (数はその端末にだけ残る) |
+| `site.css` | 3 枚で共通の見た目 |
 
 もとは将棋クイズでしたが、クイズはやめて年表だけにしました。
 クイズのころのソースは [`kakugawari/app_template`](https://github.com/kakugawari/app_template) に残っています。
