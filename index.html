@@ -406,6 +406,11 @@
       for (const [year, name] of per[key]) if (per[key].get(year + 1) === name) mamotta[name] = true;
     }
     const rank = Object.keys(count).sort((a, b) => count[b] - count[a] || a.localeCompare(b));
+    // 下の一覧に出す「通算何期」は、表に出ていない分もふくめて数える。
+    // 表は 1 年 1 マスなので、棋聖戦の前期 (1994年度まで年2回) と、いまは無い十段・九段が入らない。
+    // 表のマスだけ数えると、羽生善治が 99 期でなく 97 期になってしまう
+    const tsuusan = {};
+    for (const t of T.TITLES) for (const h of t.holders) tsuusan[h.name] = (tsuusan[h.name] || 0) + 1;
 
     $('nenpyo-note').textContent =
       'いま行われている8つのタイトルを、横にならべた年表。新しい年が上だよ。'
@@ -458,16 +463,19 @@
 
     // 色を付けた人の一覧
     list.appendChild(el('div', 'zukan-fam', '時代を作った人'));
+    list.appendChild(el('p', 'zukan-note',
+      '数は通算のタイトル獲得期数。棋聖戦の前期や、十段・九段もふくめて数えているので、上の表のマスの数より多い人がいるよ'));
     const legend = el('ul', 'n-legend');
-    for (const name of rank) {
-      if (!KOI[name]) continue;
+    const koiJun = Object.keys(KOI).filter((n) => tsuusan[n])
+      .sort((a, b) => tsuusan[b] - tsuusan[a] || a.localeCompare(b));
+    for (const name of koiJun) {
       const li = el('li');
       const chip = el('span', 'n-chip');
       chip.style.background = KOI[name][0];
       chip.style.borderColor = KOI[name][1];
       li.appendChild(chip);
       li.appendChild(el('span', 'n-name', name));
-      li.appendChild(el('span', 'n-ki', count[name] + '回'));
+      li.appendChild(el('span', 'n-ki', '通算' + tsuusan[name] + '期'));
       legend.appendChild(li);
     }
     list.appendChild(legend);
