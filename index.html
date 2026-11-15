@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>タイトル年表 - ひな将棋</title>
-<meta name="description" content="将棋の八大タイトル、歴代タイトルホルダーの年表">
+<title>ひなの歴史 - ひな将棋</title>
+<meta name="description" content="将棋の級位・段位があがってきた記録">
 <meta name="theme-color" content="#faf8f3">
 <link rel="icon" href="./icon-192.png">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
@@ -16,286 +16,177 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800&family=Shippori+Mincho+B1:wght@700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="./site.css">
+<style>
+/* ---------------- 級の記録 ---------------- */
+
+/* 学年ごとの箱。上から下へ、古い順 (2年生 → 3年生 → …、17級 → 16級 → …)。
+   見出しの「17級 → 13級」と、中のならびの向きを同じにしてある */
+.g-box {
+  background: var(--kami-2); border: 1px solid var(--sen); border-top: 4px solid var(--g);
+  border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; margin-top: 12px;
+}
+.g-head {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 10px 14px; background: var(--g-usu);
+}
+.g-nen {
+  font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif;
+  font-size: 1.3rem; color: var(--g); letter-spacing: .06em; line-height: 1.2;
+}
+.g-nendo { font-size: .7rem; font-weight: 500; color: var(--usu); }
+.g-ima { font-size: .68rem; color: #fff; background: var(--g); border-radius: 999px; padding: 2px 9px; }
+.g-sum { margin-left: auto; text-align: right; font-size: .78rem; color: var(--sumi-2); line-height: 1.5; }
+.g-sum small { display: block; font-size: .68rem; font-weight: 500; color: var(--usu); }
+.g-1 { --g: #b4506f; --g-usu: #fbeef2; --g-sen: #ecc4d1; }
+.g-2 { --g: #b23a2e; --g-usu: #f7ece7; --g-sen: #ecc5bf; }
+.g-3 { --g: #2f5d8a; --g-usu: #e9eef5; --g-sen: #bdd0e4; }
+.g-4 { --g: #3f7a3a; --g-usu: #eaf2e4; --g-sen: #c3dcc0; }
+.g-5 { --g: #5b4370; --g-usu: #efe9f5; --g-sen: #d2c5e0; }
+.g-6 { --g: #8a6a10; --g-usu: #fbf3dc; --g-sen: #e6d5a0; }
+
+/* 道。● が昇級した日、● と ● のあいだの線が「その級にいた日数」(長いほど長くいた) */
+.tl { list-style: none; margin: 0; padding: 14px 14px 12px; }
+.tl li { display: grid; grid-template-columns: 46px 22px 1fr; column-gap: 8px; }
+.tl-rail { position: relative; }
+.tl-rail::before {                       /* 道の線 */
+  content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 4px; margin-left: -2px;
+  background: var(--g-sen);
+}
+.tl-node:first-child .tl-rail::before { top: 14px; border-radius: 2px 2px 0 0; }
+.tl-node .tl-rail::after {               /* 昇級の ● */
+  content: ""; position: absolute; left: 50%; top: 5px; width: 18px; height: 18px; margin-left: -9px;
+  border-radius: 50%; background: var(--kami-2); border: 4px solid var(--g); box-sizing: border-box;
+}
+.tl-date { text-align: right; line-height: 1.2; padding-top: 4px; }
+.tl-date b { display: block; font-family: "M PLUS Rounded 1c", system-ui, sans-serif; font-size: .92rem; color: var(--sumi-2); }
+.tl-date span { font-size: .62rem; font-weight: 500; color: var(--usu); }
+.tl-rank { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-height: 28px; }
+.tl-rank .n-name { font-size: 1.2rem; line-height: 1.3; }
+.tl-stay { display: flex; align-items: center; font-size: .74rem; font-weight: 500; color: var(--usu); }
+.tl-stay b { font-weight: 700; color: var(--sumi-2); margin-right: 3px; }
+/* いまの級。線は点線で、まだ先につづく */
+.tl-seg.is-ima .tl-rail::before {
+  background: repeating-linear-gradient(var(--g) 0 5px, transparent 5px 10px);
+}
+.tl-seg.is-ima .tl-stay, .tl-seg.is-ima .tl-stay b { color: var(--g); font-weight: 700; }
+.tl-node.is-ima .tl-rail::after { background: var(--g); }
+.tl-node.is-ima .n-name { color: var(--g); }
+.k-fast { background: var(--shu-usu); color: var(--shu); }
+.tl-note { font-size: .74rem; font-weight: 500; color: var(--usu); line-height: 1.7; text-align: center; }
+.tl-note i { font-style: normal; color: var(--sumi-2); font-weight: 700; }
+.k-jump {
+  display: inline-block; margin-top: 8px; font-size: .74rem; color: var(--shu); text-decoration: none;
+  border: 1px solid var(--sen-2); border-radius: 999px; padding: 4px 14px; background: var(--kami);
+}
+
+.k-now {
+  text-align: center; background: var(--kami-2); border: 1px solid var(--sen);
+  border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px 12px 14px;
+}
+.k-now-who { font-size: .78rem; color: var(--usu); letter-spacing: .1em; }
+.k-now-rank {
+  font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif;
+  font-size: 2.6rem; color: var(--shu); letter-spacing: .12em; line-height: 1.3; margin-top: 4px;
+}
+.k-now-sub { font-size: .76rem; font-weight: 500; color: var(--sumi-2); line-height: 1.8; }
+
+.k-stats { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+.k-stats > * { grid-column: span 2; }          /* 上の段は 3 つ */
+.k-stats > .is-wide { grid-column: span 3; }   /* 下の段 (早い・長い) は 2 つ */
+.k-stat small { display: block; font-size: .78rem; font-weight: 700; color: var(--sumi-2); margin-top: 1px; }
+.k-stat.is-hayai b { color: var(--shu); }
+.k-stat.is-nagai b { color: var(--ai); }
+.k-stat {
+  background: var(--kami-2); border: 1px solid var(--sen); border-radius: 11px;
+  padding: 9px 4px; text-align: center;
+}
+.k-stat b { display: block; font-size: 1.25rem; color: var(--sumi); }
+.k-stat span { font-size: .66rem; font-weight: 500; color: var(--usu); }
+
+.k-chart-wrap {
+  background: var(--kami-2); border: 1px solid var(--sen); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 10px 8px 6px; position: relative;
+}
+.k-chart { display: block; width: 100%; height: auto; overflow: visible; }
+.k-chart .ax { font-size: 10px; fill: var(--usu); font-weight: 500; }
+.k-chart .grid { stroke: var(--sen); stroke-width: 1; }
+.k-chart .ln { fill: none; stroke-width: 2; stroke-linejoin: round; }
+.k-chart .dot { stroke: var(--kami-2); stroke-width: 2; }
+.k-chart .hit { fill: transparent; cursor: pointer; }
+.k-tip {
+  position: absolute; pointer-events: none; z-index: 2;
+  background: var(--sumi); color: #fff; font-size: .74rem; line-height: 1.6;
+  padding: 5px 9px; border-radius: 8px; white-space: nowrap; transform: translate(-50%, -110%);
+}
+.k-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; justify-content: center; margin-top: 6px; font-size: .74rem; color: var(--sumi-2); }
+.k-legend i { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: 3px; margin-right: 5px; }
+
+.k-where { display: block; font-size: .7rem; font-weight: 500; color: var(--usu); margin-top: 2px; }
+.k-memo { display: block; font-size: .74rem; font-weight: 500; color: var(--sumi-2); line-height: 1.7; margin-top: 3px; }
+
+.k-empty {
+  background: var(--kami-2); border: 1px dashed var(--sen-2); border-radius: var(--radius);
+  padding: 16px; font-size: .8rem; font-weight: 500; line-height: 1.9; color: var(--sumi-2);
+}
+.k-empty code { font-size: .74rem; background: var(--kami-3); padding: 1px 4px; border-radius: 4px; }
+</style>
 </head>
 <body>
 
 <div id="app">
   <header class="site-head">
-    <h1 class="site-title">将棋 タイトル年表<small>れきだい タイトルホルダー</small></h1>
+    <h1 class="site-title" id="k-title">ひなの歴史<small>きゅう・だん の あゆみ</small></h1>
     <nav class="site-nav">
-      <a href="./" aria-current="page">タイトル年表</a>
-      <a href="./kyu.html">ひなの歴史</a>
+      <a href="./" aria-current="page">ひなの歴史</a>
       <a href="./shoritsu.html">勝率チェック</a>
+      <a href="./titles.html">タイトル年表</a>
     </nav>
   </header>
 
-  <section class="screen is-active" id="screen-nenpyo">
-    <div class="hud">
-      <span class="hud-score" id="nenpyo-count"></span>
-    </div>
-    <div class="tabs" id="nenpyo-tabs"></div>
-    <p class="zukan-note" id="nenpyo-note"></p>
-    <p class="n-range" id="nenpyo-range"></p>
-    <p class="n-pick" id="nenpyo-pick" hidden></p>
-    <div id="nenpyo-list"></div>
+  <section class="screen is-active" id="screen-kyu">
+    <div id="kyu-body"></div>
   </section>
 </div>
 
 <script>
 /*!
- * titles.js — 歴代タイトルホルダーの年表。
+ * ひなの歴史 (級の記録)。中身は下の KIROKU に書く (このファイルだけ直せばよい)。
  *
- * ★ このファイルだけは、将棋エンジンで検算できない ★
- * 囲い・手筋・戦法は core.js が実際に指して確かめているが、
- * 「何年度に誰がタイトルを取ったか」は将棋のルールから導けない。
- * だから外の記録を写して入れる。名前が合っているかは写す人の責任。
- * 写しまちがい (年のとばし・重複・逆順、名前のゆれ、肩書きの混入) だけは
- * (テストは元の app_template 側にある)。
- *
- * 1 行は「開催年度 + 名前」。棋聖戦は 1994年度まで 1 年に 2 回あったので、
- * 年のうしろに 前 / 後 を付けて 2 行書く。
- *   '1988 島朗'  '1994前 羽生善治'  '1994後 羽生善治'
- *
- * 年がとぶところは gaps に理由を書く。書いていない飛びはテストが落とす
- * (写すときに 1 行落としたのか、ほんとうに行われなかったのかを区別するため)。
- *
- * 入れていないもの:
- *   - タイトル戦になる前の一般棋戦 (王座戦の1982年度まで、叡王戦の2016年度まで など)
- *   - まだ終わっていない年度
+ * 1 行 = 1 回の昇級・昇段 (いちばん最初の「はじめて級をもらった」も 1 行)。
+ *   date  … 'YYYY-MM-DD'。日がわからなければ 'YYYY-MM' でもよい
+ *   rank  … '15級' / '1級' / '初段' / '二段' など。数字は半角でも漢数字でもよい
+ *   where … どこでの級か (道場の名前、将棋連盟、ネット将棋 など)。
+ *           ちがう where は、グラフで別の線になる (級のつけ方が場所ごとにちがうため)
+ *   memo  … ひとこと (なくてもよい)
  */
-(function (root, factory) {
-  'use strict';
-  if (typeof module === 'object' && typeof module.exports === 'object') {
-    module.exports = factory();
-  } else {
-    root.Titles = factory();
-  }
-})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
-  'use strict';
+const KIROKU = {
+  title: 'ひなの歴史',  // ページの見出し。空なら「級の記録」
+  // 学年。この年度 (4月〜3月) に何年生か。ここから前の学年を数える
+  gakunen: { nendo: 2026, nen: 4 },
+  rows: [
+    // { date: '2024-04-14', rank: '15級', where: '〇〇将棋教室', memo: 'はじめての級' },
+    { date: '2024-09-29', rank: '17級' },  // 令和6年9月29日
+    { date: '2024-11-10', rank: '16級' },  // 令和6年11月10日
+    { date: '2024-12-26', rank: '15級' },  // 令和6年12月26日
+    { date: '2024-12-29', rank: '14級' },  // 令和6年12月29日
+    { date: '2025-01-25', rank: '13級' },  // 令和7年1月25日
+    { date: '2025-05-25', rank: '12級' },  // 令和7年5月25日
+    { date: '2025-06-22', rank: '11級' },  // 令和7年6月22日
+    { date: '2025-06-30', rank: '10級' },  // 令和7年6月30日
+    { date: '2025-10-26', rank: '9級' },  // 令和7年10月26日
+    { date: '2025-10-31', rank: '8級' },  // 令和7年10月31日
+    { date: '2026-02-26', rank: '7級' },  // 令和8年2月26日
+    { date: '2026-05-26', rank: '6級' },  // 令和8年5月26日
+    { date: '2026-07-12', rank: '5級' },  // 令和8年7月12日
+    { date: '2026-09-25', rank: '4級' },  // 令和8年9月25日
+    { date: '2026-10-18', rank: '3級' },  // 令和8年10月18日
+    { date: '2026-11-15', rank: '2級' },  // 令和8年11月15日
+  ]
+};
 
-  const KISEN = [
-    { key: 'ryuou', name: '竜王', kana: 'りゅうおう',
-      note: '賞金がいちばん高いタイトル。1988年度に十段戦から生まれかわった',
-      gaps: null,
-      rows: [
-      '1988 島朗', '1989 羽生善治', '1990 谷川浩司', '1991 谷川浩司',
-      '1992 羽生善治', '1993 佐藤康光', '1994 羽生善治', '1995 羽生善治',
-      '1996 谷川浩司', '1997 谷川浩司', '1998 藤井猛', '1999 藤井猛',
-      '2000 藤井猛', '2001 羽生善治', '2002 羽生善治', '2003 森内俊之',
-      '2004 渡辺明', '2005 渡辺明', '2006 渡辺明', '2007 渡辺明',
-      '2008 渡辺明', '2009 渡辺明', '2010 渡辺明', '2011 渡辺明',
-      '2012 渡辺明', '2013 森内俊之', '2014 糸谷哲郎', '2015 渡辺明',
-      '2016 渡辺明', '2017 羽生善治', '2018 広瀬章人', '2019 豊島将之',
-      '2020 豊島将之', '2021 藤井聡太', '2022 藤井聡太', '2023 藤井聡太',
-      '2024 藤井聡太', '2025 藤井聡太'
-      ] },
-    { key: 'meijin', name: '名人', kana: 'めいじん',
-      note: 'いちばん古いタイトル。順位戦のA級で1位になった人だけが挑戦できる',
-      gaps: { 1939: '名人戦は2年に1回だった', 1941: '名人戦は2年に1回だった', 1943: '名人戦は2年に1回だった', 1945: '戦争で名人戦が中止になった', 1977: '主催する新聞社が変わり、この年度は名人戦が行われなかった' },
-      rows: [
-      '1938 木村義雄', '1940 木村義雄', '1942 木村義雄', '1944 木村義雄',
-      '1946 木村義雄', '1947 塚田正夫', '1948 塚田正夫', '1949 木村義雄',
-      '1950 木村義雄', '1951 木村義雄', '1952 大山康晴', '1953 大山康晴',
-      '1954 大山康晴', '1955 大山康晴', '1956 大山康晴', '1957 升田幸三',
-      '1958 升田幸三', '1959 大山康晴', '1960 大山康晴', '1961 大山康晴',
-      '1962 大山康晴', '1963 大山康晴', '1964 大山康晴', '1965 大山康晴',
-      '1966 大山康晴', '1967 大山康晴', '1968 大山康晴', '1969 大山康晴',
-      '1970 大山康晴', '1971 大山康晴', '1972 中原誠', '1973 中原誠',
-      '1974 中原誠', '1975 中原誠', '1976 中原誠', '1978 中原誠',
-      '1979 中原誠', '1980 中原誠', '1981 中原誠', '1982 加藤一二三',
-      '1983 谷川浩司', '1984 谷川浩司', '1985 中原誠', '1986 中原誠',
-      '1987 中原誠', '1988 谷川浩司', '1989 谷川浩司', '1990 中原誠',
-      '1991 中原誠', '1992 中原誠', '1993 米長邦雄', '1994 羽生善治',
-      '1995 羽生善治', '1996 羽生善治', '1997 谷川浩司', '1998 佐藤康光',
-      '1999 佐藤康光', '2000 丸山忠久', '2001 丸山忠久', '2002 森内俊之',
-      '2003 羽生善治', '2004 森内俊之', '2005 森内俊之', '2006 森内俊之',
-      '2007 森内俊之', '2008 羽生善治', '2009 羽生善治', '2010 羽生善治',
-      '2011 森内俊之', '2012 森内俊之', '2013 森内俊之', '2014 羽生善治',
-      '2015 羽生善治', '2016 佐藤天彦', '2017 佐藤天彦', '2018 佐藤天彦',
-      '2019 豊島将之', '2020 渡辺明', '2021 渡辺明', '2022 渡辺明',
-      '2023 藤井聡太', '2024 藤井聡太', '2025 藤井聡太', '2026 藤井聡太'
-      ] },
-    { key: 'eiou', name: '叡王', kana: 'えいおう',
-      note: 'いちばん新しいタイトル。2018年度からタイトル戦になった',
-      gaps: null,
-      rows: [
-      '2018 高見泰地', '2019 永瀬拓矢', '2020 豊島将之', '2021 藤井聡太',
-      '2022 藤井聡太', '2023 藤井聡太', '2024 伊藤匠', '2025 伊藤匠',
-      '2026 伊藤匠'
-      ] },
-    { key: 'oui', name: '王位', kana: 'おうい',
-      note: '挑戦者は、紅組と白組に分かれたリーグ戦で決める。1960年度からタイトル戦',
-      gaps: null,
-      rows: [
-      '1960 大山康晴', '1961 大山康晴', '1962 大山康晴', '1963 大山康晴',
-      '1964 大山康晴', '1965 大山康晴', '1966 大山康晴', '1967 大山康晴',
-      '1968 大山康晴', '1969 大山康晴', '1970 大山康晴', '1971 大山康晴',
-      '1972 内藤國雄', '1973 中原誠', '1974 中原誠', '1975 中原誠',
-      '1976 中原誠', '1977 中原誠', '1978 中原誠', '1979 米長邦雄',
-      '1980 中原誠', '1981 中原誠', '1982 内藤國雄', '1983 高橋道雄',
-      '1984 加藤一二三', '1985 高橋道雄', '1986 高橋道雄', '1987 谷川浩司',
-      '1988 森雞二', '1989 谷川浩司', '1990 谷川浩司', '1991 谷川浩司',
-      '1992 郷田真隆', '1993 羽生善治', '1994 羽生善治', '1995 羽生善治',
-      '1996 羽生善治', '1997 羽生善治', '1998 羽生善治', '1999 羽生善治',
-      '2000 羽生善治', '2001 羽生善治', '2002 谷川浩司', '2003 谷川浩司',
-      '2004 羽生善治', '2005 羽生善治', '2006 羽生善治', '2007 深浦康市',
-      '2008 深浦康市', '2009 深浦康市', '2010 広瀬章人', '2011 羽生善治',
-      '2012 羽生善治', '2013 羽生善治', '2014 羽生善治', '2015 羽生善治',
-      '2016 羽生善治', '2017 菅井竜也', '2018 豊島将之', '2019 木村一基',
-      '2020 藤井聡太', '2021 藤井聡太', '2022 藤井聡太', '2023 藤井聡太',
-      '2024 藤井聡太', '2025 藤井聡太', '2026 藤井聡太'
-      ] },
-    { key: 'ouza', name: '王座', kana: 'おうざ',
-      note: '五番勝負で決めるタイトル。1983年度からタイトル戦になった',
-      gaps: null,
-      rows: [
-      '1983 中原誠', '1984 中原誠', '1985 中原誠', '1986 中原誠',
-      '1987 塚田泰明', '1988 中原誠', '1989 中原誠', '1990 谷川浩司',
-      '1991 福崎文吾', '1992 羽生善治', '1993 羽生善治', '1994 羽生善治',
-      '1995 羽生善治', '1996 羽生善治', '1997 羽生善治', '1998 羽生善治',
-      '1999 羽生善治', '2000 羽生善治', '2001 羽生善治', '2002 羽生善治',
-      '2003 羽生善治', '2004 羽生善治', '2005 羽生善治', '2006 羽生善治',
-      '2007 羽生善治', '2008 羽生善治', '2009 羽生善治', '2010 羽生善治',
-      '2011 渡辺明', '2012 羽生善治', '2013 羽生善治', '2014 羽生善治',
-      '2015 羽生善治', '2016 羽生善治', '2017 中村太地', '2018 斎藤慎太郎',
-      '2019 永瀬拓矢', '2020 永瀬拓矢', '2021 永瀬拓矢', '2022 永瀬拓矢',
-      '2023 藤井聡太', '2024 藤井聡太', '2025 伊藤匠', '2026 広瀬章人'
-      ] },
-    { key: 'kiou', name: '棋王', kana: 'きおう',
-      note: '挑戦者を決める勝ちぬき戦に、負けた人がもう一度上がれる道があるのが特ちょう',
-      gaps: null,
-      rows: [
-      '1975 大内延介', '1976 加藤一二三', '1977 加藤一二三', '1978 米長邦雄',
-      '1979 中原誠', '1980 米長邦雄', '1981 米長邦雄', '1982 米長邦雄',
-      '1983 米長邦雄', '1984 桐山清澄', '1985 谷川浩司', '1986 高橋道雄',
-      '1987 谷川浩司', '1988 南芳一', '1989 南芳一', '1990 羽生善治',
-      '1991 羽生善治', '1992 羽生善治', '1993 羽生善治', '1994 羽生善治',
-      '1995 羽生善治', '1996 羽生善治', '1997 羽生善治', '1998 羽生善治',
-      '1999 羽生善治', '2000 羽生善治', '2001 羽生善治', '2002 丸山忠久',
-      '2003 谷川浩司', '2004 羽生善治', '2005 森内俊之', '2006 佐藤康光',
-      '2007 佐藤康光', '2008 久保利明', '2009 久保利明', '2010 久保利明',
-      '2011 郷田真隆', '2012 渡辺明', '2013 渡辺明', '2014 渡辺明',
-      '2015 渡辺明', '2016 渡辺明', '2017 渡辺明', '2018 渡辺明',
-      '2019 渡辺明', '2020 渡辺明', '2021 渡辺明', '2022 藤井聡太',
-      '2023 藤井聡太', '2024 藤井聡太', '2025 藤井聡太'
-      ] },
-    { key: 'oushou', name: '王将', kana: 'おうしょう',
-      note: '挑戦者は、7人のリーグ戦で決める。1951年度からタイトル戦',
-      gaps: null,
-      rows: [
-      '1951 升田幸三', '1952 大山康晴', '1953 大山康晴', '1954 大山康晴',
-      '1955 升田幸三', '1956 升田幸三', '1957 大山康晴', '1958 大山康晴',
-      '1959 大山康晴', '1960 大山康晴', '1961 大山康晴', '1962 二上達也',
-      '1963 大山康晴', '1964 大山康晴', '1965 大山康晴', '1966 大山康晴',
-      '1967 大山康晴', '1968 大山康晴', '1969 大山康晴', '1970 大山康晴',
-      '1971 大山康晴', '1972 中原誠', '1973 中原誠', '1974 中原誠',
-      '1975 中原誠', '1976 中原誠', '1977 中原誠', '1978 加藤一二三',
-      '1979 大山康晴', '1980 大山康晴', '1981 大山康晴', '1982 米長邦雄',
-      '1983 米長邦雄', '1984 中原誠', '1985 中村修', '1986 中村修',
-      '1987 南芳一', '1988 南芳一', '1989 米長邦雄', '1990 南芳一',
-      '1991 谷川浩司', '1992 谷川浩司', '1993 谷川浩司', '1994 谷川浩司',
-      '1995 羽生善治', '1996 羽生善治', '1997 羽生善治', '1998 羽生善治',
-      '1999 羽生善治', '2000 羽生善治', '2001 佐藤康光', '2002 羽生善治',
-      '2003 森内俊之', '2004 羽生善治', '2005 羽生善治', '2006 羽生善治',
-      '2007 羽生善治', '2008 羽生善治', '2009 久保利明', '2010 久保利明',
-      '2011 佐藤康光', '2012 渡辺明', '2013 渡辺明', '2014 郷田真隆',
-      '2015 郷田真隆', '2016 久保利明', '2017 久保利明', '2018 渡辺明',
-      '2019 渡辺明', '2020 渡辺明', '2021 藤井聡太', '2022 藤井聡太',
-      '2023 藤井聡太', '2024 藤井聡太', '2025 藤井聡太'
-      ] },
-    { key: 'kisei', name: '棋聖', kana: 'きせい',
-      note: '1994年度までは1年に2回（前期・後期）あった。いまは五番勝負で年1回',
-      gaps: null,
-      rows: [
-      '1962後 大山康晴', '1963前 大山康晴', '1963後 大山康晴', '1964前 大山康晴',
-      '1964後 大山康晴', '1965前 大山康晴', '1965後 大山康晴', '1966前 二上達也',
-      '1966後 大山康晴', '1967前 山田道美', '1967後 山田道美', '1968前 中原誠',
-      '1968後 中原誠', '1969前 中原誠', '1969後 内藤國雄', '1970前 大山康晴',
-      '1970後 中原誠', '1971前 中原誠', '1971後 中原誠', '1972前 中原誠',
-      '1972後 有吉道夫', '1973前 米長邦雄', '1973後 内藤國雄', '1974前 大山康晴',
-      '1974後 大山康晴', '1975前 大山康晴', '1975後 大山康晴', '1976前 大山康晴',
-      '1976後 大山康晴', '1977前 大山康晴', '1977後 中原誠', '1978前 中原誠',
-      '1978後 中原誠', '1979前 中原誠', '1979後 中原誠', '1980前 米長邦雄',
-      '1980後 二上達也', '1981前 二上達也', '1981後 二上達也', '1982前 森雞二',
-      '1982後 中原誠', '1983前 森安秀光', '1983後 米長邦雄', '1984前 米長邦雄',
-      '1984後 米長邦雄', '1985前 米長邦雄', '1985後 米長邦雄', '1986前 桐山清澄',
-      '1986後 桐山清澄', '1987前 桐山清澄', '1987後 南芳一', '1988前 田中寅彦',
-      '1988後 中原誠', '1989前 中原誠', '1989後 中原誠', '1990前 屋敷伸之',
-      '1990後 屋敷伸之', '1991前 南芳一', '1991後 谷川浩司', '1992前 谷川浩司',
-      '1992後 谷川浩司', '1993前 羽生善治', '1993後 羽生善治', '1994前 羽生善治',
-      '1994後 羽生善治', '1995 羽生善治', '1996 三浦弘行', '1997 屋敷伸之',
-      '1998 郷田真隆', '1999 谷川浩司', '2000 羽生善治', '2001 郷田真隆',
-      '2002 佐藤康光', '2003 佐藤康光', '2004 佐藤康光', '2005 佐藤康光',
-      '2006 佐藤康光', '2007 佐藤康光', '2008 羽生善治', '2009 羽生善治',
-      '2010 羽生善治', '2011 羽生善治', '2012 羽生善治', '2013 羽生善治',
-      '2014 羽生善治', '2015 羽生善治', '2016 羽生善治', '2017 羽生善治',
-      '2018 豊島将之', '2019 渡辺明', '2020 藤井聡太', '2021 藤井聡太',
-      '2022 藤井聡太', '2023 藤井聡太', '2024 藤井聡太', '2025 藤井聡太',
-      '2026 藤井聡太'
-      ] },
-    { key: 'judan', name: '十段', kana: 'じゅうだん',
-      note: '竜王戦の前の名前。1962年度から1987年度まで。いまはもう行われていない',
-      gaps: null,
-      rows: [
-      '1962 大山康晴', '1963 大山康晴', '1964 大山康晴', '1965 大山康晴',
-      '1966 大山康晴', '1967 大山康晴', '1968 加藤一二三', '1969 大山康晴',
-      '1970 中原誠', '1971 中原誠', '1972 中原誠', '1973 大山康晴',
-      '1974 中原誠', '1975 中原誠', '1976 中原誠', '1977 中原誠',
-      '1978 中原誠', '1979 中原誠', '1980 加藤一二三', '1981 加藤一二三',
-      '1982 中原誠', '1983 中原誠', '1984 米長邦雄', '1985 米長邦雄',
-      '1986 福崎文吾', '1987 高橋道雄'
-      ] },
-    { key: 'kudan', name: '九段', kana: 'くだん',
-      note: '十段戦の、さらに前の名前。1950年度から1961年度まで。竜王戦のいちばん古いご先祖',
-      gaps: null,
-      rows: [
-      '1950 大山康晴', '1951 大山康晴', '1952 塚田正夫', '1953 塚田正夫',
-      '1954 塚田正夫', '1955 塚田正夫', '1956 升田幸三', '1957 升田幸三',
-      '1958 大山康晴', '1959 大山康晴', '1960 大山康晴', '1961 大山康晴'
-      ] }
-  ];
-
-  /* いま (2026年9月) の保持者と、その人がその棋戦で取った通算の期数。
-     出どころの一覧表をそのまま写したもの。上の KISEN を数えた結果と合うかを
-     titles.test.js が確かめる。**1 つの列の歴史ぜんぶを裏取りできる**ので、
-     新しい年度を足すときや、写しまちがいを疑ったときの答え合わせに使う。
-     next は次回の防衛戦の予定。これが翌年になっている棋戦だけ、その年度は
-     もう終わっている (だから2026年度は名人・叡王・王位・王座・棋聖の5つが入っている) */
-  const GENZAI = { asOf: 2026, list: [
-    { key: 'ryuou',  name: '藤井聡太', ki: 5, next: '2026年10月〜' },
-    { key: 'meijin', name: '藤井聡太', ki: 4, next: '2027年4月〜' },
-    { key: 'eiou',   name: '伊藤匠',   ki: 3, next: '2027年4月〜' },
-    { key: 'oui',    name: '藤井聡太', ki: 7, next: '2027年7月〜' },
-    { key: 'ouza',   name: '広瀬章人', ki: 1, next: '2027年9月〜' },
-    { key: 'kisei',  name: '藤井聡太', ki: 7, next: '2027年6月〜' },
-    { key: 'kiou',   name: '藤井聡太', ki: 4, next: '2027年2月〜' },
-    { key: 'oushou', name: '藤井聡太', ki: 5, next: '2027年1月〜' }
-  ] };
-
-  /* '1994後 羽生善治' を { year: 1994, term: '後', name: '羽生善治' } にほどく。
-     書き方がくずれていたらここで止める (静かに変な形が通らないように)。 */
-  const TITLES = KISEN.map((k) => {
-    const holders = k.rows.map((row) => {
-      const m = /^(\d{4})(前|後)?\s(\S+)$/.exec(row);
-      if (!m) throw new Error(k.name + ': 行の書き方がちがう: ' + row);
-      return { year: Number(m[1]), term: m[2] || '', name: m[3] };
-    });
-    return { key: k.key, name: k.name, kana: k.kana, note: k.note,
-             gaps: k.gaps || {}, holders: holders };
-  });
-
-  return { TITLES: TITLES, GENZAI: GENZAI };
-});
-
-/*!
- * 年表の画面。
- */
 (function () {
   'use strict';
-
-  const T = window.Titles;
   const $ = (id) => document.getElementById(id);
-
   function el(tag, cls, text) {
     const e = document.createElement(tag);
     if (cls) e.className = cls;
@@ -303,297 +194,312 @@
     return e;
   }
 
-  /* ============================================================
-     年表 (歴代タイトルホルダー)
-     ============================================================ */
+  const KANSUJI = { 一: 1, 二: 2, 三: 3, 四: 4, 五: 5, 六: 6, 七: 7, 八: 8, 九: 9, 十: 10, 初: 1 };
+  /** '15級' → -15、'初段' → 1、'二段' → 2。上にいくほど大きい数になる。 */
+  function rankValue(rank) {
+    const m = /^(\d+|[一二三四五六七八九十初]+)\s*(級|段)$/.exec(String(rank).trim());
+    if (!m) throw new Error('級・段の書き方がちがう: ' + rank);
+    let n;
+    if (/^\d+$/.test(m[1])) n = Number(m[1]);
+    else n = m[1] === '十' ? 10 : m[1].split('').reduce((a, c) => (c === '十' ? (a || 1) * 10 : a + KANSUJI[c]), 0);
+    return m[2] === '級' ? -n : n;
+  }
+  function parseDate(s) {
+    const m = /^(\d{4})-(\d{1,2})(?:-(\d{1,2}))?$/.exec(s);
+    if (!m) throw new Error('日付の書き方がちがう: ' + s);
+    return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3] || 1));
+  }
+  function dateText(r) {
+    const d = r.d;
+    return (d.getMonth() + 1) + '月' + (r.date.split('-').length > 2 ? d.getDate() + '日' : '');
+  }
+  const DAY = 24 * 3600 * 1000;
+  function span(days) {
+    if (days < 60) return days + '日';
+    const mo = Math.round(days / 30.44);
+    return mo < 12 ? mo + 'か月' : Math.floor(mo / 12) + '年' + (mo % 12 ? (mo % 12) + 'か月' : '');
+  }
 
-  let nenpyoTab = null;
+  // 線の色。場所ごとに決まった順でわりあてる (ふえても前の色は変わらない)
+  const IRO = ['#b23a2e', '#2f5d8a', '#2d6a32', '#7a5510'];
 
-  /** 同じ人が続いたところを 1 かたまりにまとめる (「4連覇」と見せるため)。
-      年がとんでいるところではまとめない (続けて取ったわけではないので)。 */
-  function runsOf(holders) {
-    const runs = [];
-    for (const h of holders) {
-      const run = runs[runs.length - 1];
-      const prev = run && run.rows[run.rows.length - 1];
-      const tsuzuki = prev && (h.year === prev.year || h.year === prev.year + 1);
-      if (run && run.name === h.name && tsuzuki) run.rows.push(h);
-      else runs.push({ name: h.name, rows: [h] });
+  function render() {
+    const body = $('kyu-body');
+    body.innerHTML = '';
+    if (KIROKU.title) {
+      $('k-title').firstChild.textContent = KIROKU.title;
+      document.title = KIROKU.title + ' - ひな将棋';
     }
-    return runs;
+
+    const rows = KIROKU.rows.map((r) => Object.assign({}, r, { d: parseDate(r.date), v: rankValue(r.rank), where: r.where || '' }))
+      .sort((a, b) => a.d - b.d);
+
+    if (!rows.length) {
+      const e = el('div', 'k-empty');
+      e.innerHTML = 'まだ記録がありません。<br><code>index.html</code> の <code>KIROKU</code> に、'
+        + '昇級した日・級・場所を 1 行ずつ書くと、ここに年表とグラフが出ます。';
+      body.appendChild(e);
+      return;
+    }
+
+    const places = [];
+    for (const r of rows) if (places.indexOf(r.where) < 0) places.push(r.where);
+    // days … 1 つ前の級から何日であがったか (札の「スピード昇級」に使う)
+    // stay … その級に何日いたか (在籍日数)。つぎの級にあがった日 − その級になった日。
+    //        いまの級は、今日までの日数 (まだ途中)
+    const last = {};
+    const kyou = new Date();
+    kyou.setHours(0, 0, 0, 0);
+    for (const r of rows) {
+      const p = last[r.where];
+      r.days = p ? Math.round((r.d - p.d) / DAY) : null;
+      if (p) p.stay = r.days;
+      r.stay = Math.max(0, Math.round((kyou - r.d) / DAY));
+      r.ima = true;
+      if (p) p.ima = false;
+      last[r.where] = r;
+    }
+
+    // いまの級 (いちばん新しい記録)
+    const now = rows[rows.length - 1];
+    const first = rows[0];
+    const card = el('div', 'k-now');
+    card.appendChild(el('div', 'k-now-who', 'いま'));
+    card.appendChild(el('div', 'k-now-rank', now.rank));
+    card.appendChild(el('div', 'k-now-sub',
+      now.d.getFullYear() + '年' + dateText(now) + 'に昇級' + (now.where ? '（' + now.where + '）' : '')
+      + '　・　' + now.rank + 'になって ' + now.stay + '日'));
+    const jump = el('a', 'k-jump', 'いまのところへ ↓');
+    jump.href = '#ima';
+    card.appendChild(jump);
+    body.appendChild(card);
+
+    const ups = rows.filter((r) => r.days !== null);
+    const owatta = rows.filter((r) => !r.ima);      // もう卒業した級 (在籍日数が決まっている)
+    const stats = el('div', 'k-stats');
+    stats.style.marginTop = '11px';
+    const stat = (n, label, cls, sub) => {
+      const s = el('div', 'k-stat' + (cls ? ' ' + cls : ''));
+      s.appendChild(el('b', null, n));
+      if (sub) s.appendChild(el('small', null, sub));
+      s.appendChild(el('span', null, label));
+      stats.appendChild(s);
+    };
+    stat(String(ups.length) + '回', rows.some((r) => r.v > 0) ? '昇級・昇段' : '昇級');
+    stat(span(Math.round((now.d - first.d) / DAY)), first.rank + 'から');
+    stat(owatta.length ? Math.round(owatta.reduce((a, r) => a + r.stay, 0) / owatta.length) + '日' : '—', '1つの級に (平均)');
+    if (owatta.length) {
+      // いまの級はまだ途中なので入れない。同じ日数の級が2つ以上あれば、ならべて出す
+      const hayai = Math.min.apply(null, owatta.map((r) => r.stay));
+      const nagai = Math.max.apply(null, owatta.map((r) => r.stay));
+      const kyuOf = (d) => owatta.filter((r) => r.stay === d).map((r) => r.rank).join('・');
+      stat(hayai + '日', 'いちばん短かった級', 'is-wide is-hayai', kyuOf(hayai));
+      stat(nagai + '日', 'いちばん長かった級', 'is-wide is-nagai', kyuOf(nagai));
+    }
+    body.appendChild(stats);
+
+    body.appendChild(el('div', 'zukan-fam', 'あがってきた道'));
+    body.appendChild(chart(rows, places));
+
+    body.appendChild(el('div', 'zukan-fam', '学年ごとの道のり'));
+    const note = el('p', 'tl-note');
+    note.innerHTML = '上から下へ、古い順だよ。<i>○</i> が昇級した日で、'
+      + '<i>○</i> と <i>○</i> のあいだの線が長いほど、その級に長くいたよ';
+    body.appendChild(note);
+    body.appendChild(nenpyo(rows, places));
   }
 
-  /** 通算で何期取ったか。多い順に。 */
-  function tallyOf(holders) {
-    const n = {};
-    for (const h of holders) n[h.name] = (n[h.name] || 0) + 1;
-    return Object.keys(n).map((name) => ({ name: name, ki: n[name] }))
-      .sort((a, b) => b.ki - a.ki || a.name.localeCompare(b.name));
+  /** 横が日付、たてが級の階段グラフ。上ほど強い。 */
+  function chart(rows, places) {
+    const W = 340, H = 220, L = 40, R = 12, T = 10, B = 26;
+    const t0 = rows[0].d.getTime(), t1 = Math.max(rows[rows.length - 1].d.getTime(), Date.now());
+    const vs = rows.map((r) => r.v);
+    const vlo = Math.min.apply(null, vs), vhi = Math.max.apply(null, vs);
+    // たての目盛りは、級と段のあいだ (0) を飛ばして 1 段ずつ数える
+    const step = (v) => (v > 0 ? v - 1 : v);          // 1級(-1) と 初段(1) をとなりにする
+    const lo = step(vlo) - 1, hi = step(vhi) + 1;
+    const x = (t) => L + (W - L - R) * (t1 === t0 ? 0.5 : (t - t0) / (t1 - t0));
+    const y = (v) => T + (H - T - B) * (1 - (step(v) - lo) / (hi - lo));
+    const NS = 'http://www.w3.org/2000/svg';
+    const s = (tag, attrs, text) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (text !== undefined) e.textContent = text; return e; };
+
+    const svg = s('svg', { viewBox: '0 0 ' + W + ' ' + H, class: 'k-chart', role: 'img',
+      'aria-label': '級のうつりかわりのグラフ。くわしくは下の年表を見てね' });
+
+    // たての目盛り。多すぎるときは間引く
+    const n = hi - lo;
+    const every = n > 12 ? Math.ceil(n / 8) : 1;
+    for (let k = lo + 1; k < hi; k++) {
+      const v = k >= 0 ? k + 1 : k;
+      if ((k - lo - 1) % every && k !== step(vhi)) continue;
+      const yy = y(v);
+      svg.appendChild(s('line', { x1: L, x2: W - R, y1: yy, y2: yy, class: 'grid' }));
+      svg.appendChild(s('text', { x: L - 6, y: yy + 3.5, 'text-anchor': 'end', class: 'ax' }, rankName(v)));
+    }
+    // 横の目盛り = 年
+    const y0 = new Date(t0).getFullYear(), y1 = new Date(t1).getFullYear();
+    const yEvery = Math.max(1, Math.ceil((y1 - y0 + 1) / 6));
+    for (let yr = y0; yr <= y1 + 1; yr += yEvery) {
+      const t = new Date(yr, 0, 1).getTime();
+      if (t < t0 || t > t1) continue;
+      svg.appendChild(s('text', { x: x(t), y: H - 8, 'text-anchor': 'middle', class: 'ax' }, String(yr)));
+    }
+
+    const wrap = el('div', 'k-chart-wrap');
+    const tip = el('div', 'k-tip');
+    tip.hidden = true;
+
+    places.forEach((p, i) => {
+      const pts = rows.filter((r) => r.where === p);
+      const color = IRO[i % IRO.length];
+      let d = '';
+      pts.forEach((r, j) => {
+        d += (j ? ' H' + x(r.d.getTime()) + ' V' + y(r.v) : 'M' + x(r.d.getTime()) + ' ' + y(r.v));
+      });
+      // いまの級を今日までのばす
+      d += ' H' + x(t1);
+      svg.appendChild(s('path', { d: d, class: 'ln', stroke: color }));
+      for (const r of pts) {
+        const cx = x(r.d.getTime()), cy = y(r.v);
+        svg.appendChild(s('circle', { cx: cx, cy: cy, r: 4.5, class: 'dot', fill: color }));
+        const hit = s('circle', { cx: cx, cy: cy, r: 14, class: 'hit', tabindex: 0 });
+        const show = () => {
+          tip.hidden = false;
+          tip.textContent = r.d.getFullYear() + '年' + dateText(r) + '　' + r.rank + (r.where && places.length > 1 ? '（' + r.where + '）' : '');
+          tip.style.left = (cx / W * 100) + '%';
+          tip.style.top = (cy / H * svg.getBoundingClientRect().height + 10) + 'px';
+        };
+        hit.addEventListener('pointerenter', show);
+        hit.addEventListener('focus', show);
+        hit.addEventListener('click', show);
+        hit.addEventListener('pointerleave', () => { tip.hidden = true; });
+        hit.addEventListener('blur', () => { tip.hidden = true; });
+        svg.appendChild(hit);
+      }
+    });
+
+    wrap.appendChild(svg);
+    wrap.appendChild(tip);
+    if (places.length > 1) {
+      const lg = el('div', 'k-legend');
+      places.forEach((p, i) => {
+        const it = el('span');
+        const sw = el('i');
+        sw.style.background = IRO[i % IRO.length];
+        it.appendChild(sw);
+        it.appendChild(document.createTextNode(p || '(場所なし)'));
+        lg.appendChild(it);
+      });
+      wrap.appendChild(lg);
+    }
+    return wrap;
   }
 
-  /* いまある八大タイトル。表に横に並べる順番 */
-  /* いまある八大タイトル。表に横に並べる順番 (もらった表と同じ) */
-  const GRID = ['ryuou', 'meijin', 'eiou', 'oui', 'ouza', 'kiou', 'oushou', 'kisei'];
-  /* 姓が 1 文字の人。ここに無い人は姓を 2 文字とみなす。
-     日本人の名前は姓が 1〜2 文字で、名前の長さからは決められないので表で持つ。
-     */
-  const SEI1 = ['南芳一', '森雞二'];
+  function rankName(v) {
+    const K = ['', '初', '二', '三', '四', '五', '六', '七', '八', '九'];
+    return v < 0 ? (-v) + '級' : (K[v] || v) + '段';
+  }
+
+  /** 年度。4月から次の3月までを 1 年と数える (学校と同じ) */
+  function nendoOf(d) { return d.getMonth() >= 3 ? d.getFullYear() : d.getFullYear() - 1; }
+  const NEN = ['', '1年生', '2年生', '3年生', '4年生', '5年生', '6年生'];
+  function nenOf(nendo) {
+    const g = KIROKU.gakunen;
+    const n = g ? g.nen + (nendo - g.nendo) : null;
+    if (n === null) return nendo + '年度';
+    if (n >= 1 && n <= 6) return NEN[n];
+    if (n >= 7 && n <= 9) return '中学' + (n - 6) + '年生';
+    if (n >= 10 && n <= 12) return '高校' + (n - 9) + '年生';
+    return n <= 0 ? '小学校に入る前' : nendo + '年度';
+  }
 
   /**
-   * 表のマスに置く名前。姓と名で行を分ける。
-   * 幅まかせに折り返すと「森雞 / 二」「加藤一 / 二三」と、変なところで切れる。
+   * 学年ごとの道のり。上から下へ、古い順 (読む向きと、時間の進む向きを同じにする)。
+   * ○ が昇級した日。○ の下の線が、その級にいた日数で、長くいたほど線も長い。
    */
-  function nameSpan(name) {
-    if (name.length < 3) return el('span', 'n-nm', name);
-    const sei = SEI1.indexOf(name) >= 0 ? 1 : 2;
-    const gyou = [name.slice(0, sei), name.slice(sei)];
-    // 3 文字の行はそのままだとマスからはみ出すので、その札だけ字を小さくする
-    const nm = el('span', 'n-nm' + (gyou.some((g) => g.length >= 3) ? ' is-long' : ''));
-    for (const g of gyou) nm.appendChild(el('span', null, g));
-    return nm;
-  }
+  function nenpyo(rows, places) {
+    const wrap = el('div', 'g-wrap');
+    const nendos = [];
+    for (const r of rows) { r.nendo = nendoOf(r.d); if (nendos.indexOf(r.nendo) < 0) nendos.push(r.nendo); }
+    const imaNendo = nendoOf(new Date());
+    const saigo = rows[rows.length - 1];
 
-  /* 色は 3 段。多すぎると、かえって時代のかたまりが見えなくなる。
-       KOI  … 何十回も取って時代を作った人。1人ずつちがう色で、字にも色を付ける
-       MAMORU … 同じタイトルを 2 年つづけて守った (防衛した) ことがある人。
-                だれも同じうすい色。個人を見分けるためではなく「一度きりではない」
-                ことを示すため
-       白    … 一度取っただけで、守れなかった人
-     伊藤匠だけは 4 回だが、藤井聡太の八冠をくずした人なので KOI に入れている。
-     だれが防衛したかは下の per (年度→名前) から数えるので、書き足す手間はない */
-  const KOI = {
-    羽生善治: ['#f8c9c5', '#a52b20'],   // 紅
-    大山康晴: ['#f2dcac', '#7a5510'],   // 黄土
-    中原誠:   ['#dcd0ef', '#4e3880'],   // 藤
-    藤井聡太: ['#fbeca0', '#6d5900'],   // 黄
-    渡辺明:   ['#cde5c9', '#2d6a32'],   // 若草
-    谷川浩司: ['#c6e5ea', '#14606b'],   // 浅葱
-    伊藤匠:   ['#c6d8f2', '#1b4a8d'],   // 青
-    佐藤康光: ['#f2cee3', '#8c3470'],   // 桃紫
-    米長邦雄: ['#dee3b8', '#5a6215'],   // 抹茶
-    森内俊之: ['#c6e3dc', '#1d5f55']    // 青緑
-  };
-  const MAMORU = '#ebe3d2';             // 防衛したことがある人の、共通のうすい色
+    for (const nd of nendos) {
+      const these = rows.filter((r) => r.nendo === nd);
+      const before = rows.filter((r) => r.nendo < nd);
+      const g = KIROKU.gakunen ? KIROKU.gakunen.nen + (nd - KIROKU.gakunen.nendo) : 0;
+      const box = el('section', 'g-box g-' + (g >= 1 && g <= 6 ? g : 2));
 
-  /** 棋戦ごとに「年度 → 名前」を作る。棋聖戦の前期・後期は後期のほうを使う。 */
-  function gridRows() {
-    const per = {};
-    let lo = Infinity, hi = -Infinity;
-    for (const key of GRID) {
-      const t = T.TITLES.find((x) => x.key === key);
-      const m = new Map();
-      for (const h of t.holders) m.set(h.year, h.name);   // 後期が前期を上書きする
-      m.saigo = t.holders[t.holders.length - 1].year;     // この棋戦が入っている最後の年度
-      per[key] = m;
-      lo = Math.min(lo, t.holders[0].year);
-      hi = Math.max(hi, t.holders[t.holders.length - 1].year);
-    }
-    const years = [];
-    for (let y = lo; y <= hi; y++) years.push(y);
-    return { per: per, years: years };
-  }
+      const head = el('div', 'g-head');
+      head.appendChild(el('span', 'g-nen', nenOf(nd)));
+      head.appendChild(el('span', 'g-nendo', nd + '年度'));
+      if (nd === imaNendo) head.appendChild(el('span', 'g-ima', 'いま'));
+      // その学年のはじめの級 → おわり (いま) の級
+      const start = before.length ? before[before.length - 1].rank : these[0].rank;
+      const end = these[these.length - 1].rank;
+      const n = these.filter((r) => r.days !== null).length;
+      const sum = el('span', 'g-sum', start === end ? end : start + ' → ' + end);
+      sum.appendChild(el('small', null, n ? n + '回 昇級' : 'はじめての級'));
+      head.appendChild(sum);
+      box.appendChild(head);
 
-  function buildNenpyoAll() {
-    const list = $('nenpyo-list');
-    list.innerHTML = '';
-    const { per, years } = gridRows();
-
-    // 何回取ったか / 同じタイトルを守ったことがあるかを数える
-    const count = {};
-    const mamotta = {};
-    for (const key of GRID) {
-      for (const name of per[key].values()) count[name] = (count[name] || 0) + 1;
-      for (const [year, name] of per[key]) if (per[key].get(year + 1) === name) mamotta[name] = true;
-    }
-    const rank = Object.keys(count).sort((a, b) => count[b] - count[a] || a.localeCompare(b));
-    // 下の一覧に出す「通算何期」は、表に出ていない分もふくめて数える。
-    // 表は 1 年 1 マスなので、棋聖戦の前期 (1994年度まで年2回) と、いまは無い十段・九段が入らない。
-    // 表のマスだけ数えると、羽生善治が 99 期でなく 97 期になってしまう
-    const tsuusan = {};
-    for (const t of T.TITLES) for (const h of t.holders) tsuusan[h.name] = (tsuusan[h.name] || 0) + 1;
-
-    $('nenpyo-note').textContent =
-      'いま行われている8つのタイトルを、横にならべた年表。新しい年が上だよ。'
-      + '「まだ」は、これから指すか、まだ決まっていないところ';
-    $('nenpyo-count').textContent = years.length + '年ぶん';
-    $('nenpyo-range').textContent =
-      years[years.length - 1] + '年度 〜 ' + years[0] + '年度。マスをおすと、大きな字で出るよ。'
-      + '棋聖戦は1994年度まで年2回あったので、ここでは後期を出している';
-
-    const table = el('table', 'n-grid');
-    const head = el('tr');
-    head.appendChild(el('th', 'n-gh n-gy', '年度'));
-    for (const key of GRID) head.appendChild(el('th', 'n-gh', T.TITLES.find((t) => t.key === key).name));
-    table.appendChild(el('thead')).appendChild(head);
-
-    const body = el('tbody');
-    for (let i = years.length - 1; i >= 0; i--) {     // 新しい年が上
-      const year = years[i];
-      const tr = el('tr');
-      tr.appendChild(el('th', 'n-gy', String(year)));
-      for (const key of GRID) {
-        const name = per[key].get(year);
-        if (!name) {
-          // 「その棋戦がまだ無かった年」と「これから指す年」は別もの。見た目も分ける
-          if (year > per[key].saigo) tr.appendChild(el('td', 'n-mada', 'まだ'));
-          else tr.appendChild(el('td', 'n-none'));
-          continue;
-        }
-        const td = el('td', 'n-cell');
-        if (KOI[name]) { td.style.background = KOI[name][0]; td.style.color = KOI[name][1]; }
-        else if (mamotta[name]) td.style.background = MAMORU;
-        // 何年つづけて持っているか (押したときに「N連覇」と出すため)
-        let from = year;
-        while (per[key].get(from - 1) === name) from--;
-        let to = year;
-        while (per[key].get(to + 1) === name) to++;
-        td.dataset.name = name;
-        td.dataset.from = from;
-        td.dataset.to = to;
-        td.dataset.kisen = T.TITLES.find((t) => t.key === key).name;
-        td.appendChild(nameSpan(name));
-        tr.appendChild(td);
+      const ol = el('ol', 'tl');
+      for (const r of these) {
+        ol.appendChild(node(r, rows.indexOf(r)));
+        ol.appendChild(seg(r));
       }
-      body.appendChild(tr);
+      box.appendChild(ol);
+      wrap.appendChild(box);
     }
-    table.appendChild(body);
-    const wrap = el('div', 'n-grid-wrap');
-    wrap.appendChild(table);
-    list.appendChild(wrap);
+    return wrap;
 
-    // 色を付けた人の一覧
-    list.appendChild(el('div', 'zukan-fam', '時代を作った人'));
-    list.appendChild(el('p', 'zukan-note',
-      '数は通算のタイトル獲得期数。棋聖戦の前期や、十段・九段もふくめて数えているので、上の表のマスの数より多い人がいるよ'));
-    const legend = el('ul', 'n-legend');
-    const koiJun = Object.keys(KOI).filter((n) => tsuusan[n])
-      .sort((a, b) => tsuusan[b] - tsuusan[a] || a.localeCompare(b));
-    for (const name of koiJun) {
-      const li = el('li');
-      const chip = el('span', 'n-chip');
-      chip.style.background = KOI[name][0];
-      chip.style.borderColor = KOI[name][1];
-      li.appendChild(chip);
-      li.appendChild(el('span', 'n-name', name));
-      li.appendChild(el('span', 'n-ki', '通算' + tsuusan[name] + '期'));
-      legend.appendChild(li);
+    /** 昇級した日の行: 日付 / ○ / 級と札 */
+    function node(r, i) {
+      const li = el('li', 'tl-node' + (r === saigo ? ' is-ima' : ''));
+      if (r === saigo) li.id = 'ima';
+      const dt = el('span', 'tl-date');
+      dt.appendChild(el('b', null, (r.d.getMonth() + 1) + '/' + (r.date.split('-').length > 2 ? r.d.getDate() : '')));
+      dt.appendChild(el('span', null, String(r.d.getFullYear())));   // 年はおまけ
+      li.appendChild(dt);
+      li.appendChild(el('span', 'tl-rail'));
+      const b = el('span', 'tl-body');
+      const main = el('span', 'tl-rank');
+      main.appendChild(el('span', 'n-name', r.rank));
+      // 同じ月に2回目 (3回目) の昇級なら「ダブル昇級」(「トリプル昇級」)。
+      // それ以外で前の級から14日以内なら「スピード昇級」
+      const kaime = rows.filter((x, j) => j <= i && x.where === r.where && x.days !== null
+        && x.d.getFullYear() === r.d.getFullYear() && x.d.getMonth() === r.d.getMonth()).length
+        + (rows.some((x, j) => j < i && x.where === r.where && x.days === null
+          && x.d.getFullYear() === r.d.getFullYear() && x.d.getMonth() === r.d.getMonth()) ? 1 : 0);
+      const BAI = { 2: 'ダブル', 3: 'トリプル' };
+      if (r.days !== null && kaime >= 2) main.appendChild(el('span', 'n-renpa k-fast', (BAI[kaime] || kaime + '回目の') + '昇級'));
+      else if (r.days !== null && r.days <= 14) main.appendChild(el('span', 'n-renpa k-fast', 'スピード昇級'));
+      if (r.days === null) main.appendChild(el('span', 'n-renpa', 'スタート'));
+      b.appendChild(main);
+      if (r.where && places.length > 1) b.appendChild(el('span', 'k-where', r.where));
+      if (r.memo) b.appendChild(el('span', 'k-memo', r.memo));
+      li.appendChild(b);
+      return li;
     }
-    list.appendChild(legend);
 
-    const mamoruNin = rank.filter((n) => !KOI[n] && mamotta[n]).length;
-    const shiroNin = rank.filter((n) => !KOI[n] && !mamotta[n]).length;
-    const p2 = el('p', 'n-shiro');
-    const chip2 = el('span', 'n-chip n-chip-in');
-    chip2.style.background = MAMORU;
-    p2.appendChild(chip2);
-    p2.appendChild(document.createTextNode(
-      'このうすい色は、同じタイトルを2年つづけて守ったことがある ' + mamoruNin + '人。'
-      + '一度取っただけの ' + shiroNin + '人は白のままだよ'));
-    list.appendChild(p2);
-
-    table.addEventListener('click', (e) => {
-      const td = e.target.closest('.n-cell');
-      if (!td) return;
-      const prev = table.querySelector('.is-pick');
-      if (prev) prev.classList.remove('is-pick');
-      td.classList.add('is-pick');
-      const from = Number(td.dataset.from);
-      const to = Number(td.dataset.to);
-      const n = to - from + 1;
-      const pick = $('nenpyo-pick');
-      pick.hidden = false;
-      pick.textContent = (n > 1 ? from + '〜' + to + '年度' : from + '年度')
-        + '　' + td.dataset.kisen + '　' + td.dataset.name
-        + (n > 1 ? '（' + n + '連覇）' : '');
-    });
+    /** ○ と ○ のあいだ: その級にいた日数。線の長さは日数に合わせる (長すぎないよう 150 日で止める) */
+    function seg(r) {
+      const li = el('li', 'tl-seg' + (r.ima ? ' is-ima' : ''));
+      li.style.minHeight = Math.round(24 + Math.min(r.stay, 150) * 0.45) + 'px';
+      li.appendChild(el('span'));
+      li.appendChild(el('span', 'tl-rail'));
+      const t = el('span', 'tl-stay');
+      t.appendChild(el('b', null, r.stay + '日'));
+      t.appendChild(document.createTextNode(r.ima ? '（いま在籍中）' : ''));
+      t.title = r.rank + 'にいた日数 ' + r.stay + '日';
+      li.appendChild(t);
+      return li;
+    }
   }
 
-  function buildNenpyo(key) {
-    const title = T.TITLES.find((t) => t.key === key) || T.TITLES[0];
-    const list = $('nenpyo-list');
-    list.innerHTML = '';
-    $('nenpyo-note').textContent = title.note;
-    const from = title.holders[0].year;
-    const to = title.holders[title.holders.length - 1].year;
-    $('nenpyo-count').textContent = title.holders.length + '回ぶん';
-    $('nenpyo-range').textContent =
-      to + '年度 〜 ' + from + '年度、' + title.holders.length + '回ぶん。新しい年が上だよ。'
-      + 'タイトル戦になる前（一般棋戦だったころ）は入れていないよ';
 
-    const line = el('ol', 'nenpyo');
-    const items = [];              // まず古い順に作って、最後にひっくり返す
-    let prevYear = null;
-    for (const run of runsOf(title.holders)) {
-      const first = run.rows[0];
-      const last = run.rows[run.rows.length - 1];
-
-      // 年がとんでいるところには、その理由を書いた札をはさむ
-      if (prevYear !== null) {
-        for (let y = prevYear + 1; y < first.year; y++) {
-          const why = title.gaps[y];
-          const gap = el('li', 'n-gap');
-          gap.appendChild(el('b', null, String(y)));
-          gap.appendChild(document.createTextNode(why || 'この年度は行われていない'));
-          items.push(gap);
-        }
-      }
-      prevYear = last.year;
-
-      // 1 年に 1 行ずつ出す。まとめてしまうと、取った回数より少なく見えるため。
-      // 連覇はひとつづきに見えるよう、札の左に帯を引く。印は、上から読んで
-      // さいしょに目に入るところ = その連覇のいちばん新しい年に付ける
-      const renpa = run.rows.length > 1;
-      run.rows.forEach((h, i) => {
-        const ue = i === run.rows.length - 1;     // ひっくり返すと、ここが上にくる
-        const li = el('li', 'n-row' + (renpa ? ' is-run' : '')
-          + (renpa && ue ? ' is-run-top' : '')
-          + (renpa && i === 0 ? ' is-run-bottom' : ''));
-        const years = el('span', 'n-year');
-        years.appendChild(el('b', null, String(h.year) + h.term));
-        li.appendChild(years);
-        const body = el('span', 'n-body');
-        body.appendChild(el('span', 'n-name', run.name));
-        if (renpa && ue) body.appendChild(el('span', 'n-renpa', run.rows.length + '連覇'));
-        li.appendChild(body);
-        items.push(li);
-      });
-    }
-    // 新しい年が上。「ぜんぶ」の表と向きをそろえる
-    for (let i = items.length - 1; i >= 0; i--) line.appendChild(items[i]);
-    list.appendChild(line);
-
-    // 通算獲得数は holders から数える (書き足したら勝手に合う)
-    const tally = tallyOf(title.holders).slice(0, 8);
-    list.appendChild(el('div', 'zukan-fam', '通算で多い人'));
-    const top = el('ul', 'n-tally');
-    for (const t of tally) {
-      const li = el('li');
-      li.appendChild(el('span', 'n-name', t.name));
-      li.appendChild(el('span', 'n-ki', t.ki + '回'));
-      top.appendChild(li);
-    }
-    list.appendChild(top);
-  }
-
-  function showNenpyo(key) {
-    nenpyoTab = key || nenpyoTab || 'all';
-    const tabs = $('nenpyo-tabs');
-    tabs.innerHTML = '';
-    const list = [{ key: 'all', name: 'ぜんぶ' }].concat(T.TITLES);
-    for (const t of list) {
-      const b = el('button', 'tab' + (t.key === nenpyoTab ? ' is-on' : ''), t.name);
-      b.type = 'button';
-      b.dataset.tab = t.key;
-      b.addEventListener('click', () => showNenpyo(t.key));
-      tabs.appendChild(b);
-    }
-    $('nenpyo-pick').hidden = true;
-    if (nenpyoTab === 'all') buildNenpyoAll();
-    else buildNenpyo(nenpyoTab);
-  }
-
-  showNenpyo('all');
-  window.__nenpyo = { show: showNenpyo, SEI1: SEI1 };
+  render();
+  window.__kyu = { rankValue: rankValue, render: render };
 })();
 </script>
 </body>
