@@ -73,17 +73,9 @@ body {
 /* ---------------- HUD ---------------- */
 
 .hud { display: flex; align-items: center; gap: 8px; }
-.hud-count { font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif; font-size: 1rem; color: var(--sumi); letter-spacing: .06em; }
 .hud-score { margin-left: auto; font-size: .74rem; color: var(--usu); background: var(--kami-2); border: 1px solid var(--sen); border-radius: 999px; padding: 5px 13px; }
 .hud-score b { color: var(--shu); font-size: 1rem; }
 
-.icon-btn {
-  width: 34px; height: 34px; flex: 0 0 auto;
-  display: grid; place-items: center;
-  font: inherit; font-size: .9rem; color: var(--sumi-2); cursor: pointer;
-  background: var(--kami-2); border: 1px solid var(--sen); border-radius: 11px;
-}
-.icon-btn:active { transform: translateY(2px); }
 
 /* ---------------- タブ・見出し ---------------- */
 
@@ -139,7 +131,6 @@ body {
   font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif;
   font-size: .88rem; font-weight: 700; color: var(--sumi-2); letter-spacing: .02em;
 }
-.n-dash { font-size: .62rem; color: var(--usu); line-height: 1; }
 .n-body {
   flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 9px;
   background: var(--kami-2); border: 1px solid var(--sen); border-radius: 11px;

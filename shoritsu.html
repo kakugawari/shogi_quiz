@@ -183,6 +183,7 @@
     sc.setAttribute('aria-label', label + 'の数');
     sc.setAttribute('aria-valuemin', '0');
     sc.setAttribute('aria-valuemax', String(MAX));
+    sc.setAttribute('aria-valuenow', '0');
     sc.appendChild(el('div', 'drum-pad'));
     const items = [];
     for (let i = 0; i <= MAX; i++) {

@@ -19,9 +19,10 @@
 <style>
 /* ---------------- 級の記録 ---------------- */
 
-/* 学年ごとの箱。箱のふちの色で学年を見分ける */
+/* 学年ごとの箱。上から下へ、古い順 (2年生 → 3年生 → …、17級 → 16級 → …)。
+   見出しの「17級 → 13級」と、中のならびの向きを同じにしてある */
 .g-box {
-  background: var(--kami-2); border: 1px solid var(--sen); border-left: 5px solid var(--g);
+  background: var(--kami-2); border: 1px solid var(--sen); border-top: 4px solid var(--g);
   border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; margin-top: 12px;
 }
 .g-head {
@@ -36,29 +37,47 @@
 .g-ima { font-size: .68rem; color: #fff; background: var(--g); border-radius: 999px; padding: 2px 9px; }
 .g-sum { margin-left: auto; text-align: right; font-size: .78rem; color: var(--sumi-2); line-height: 1.5; }
 .g-sum small { display: block; font-size: .68rem; font-weight: 500; color: var(--usu); }
-.g-list { list-style: none; margin: 0; padding: 2px 14px 6px; }
-.g-row {
-  display: grid; grid-template-columns: 50px 1fr; gap: 10px; align-items: start;
-  padding: 10px 0; border-top: 1px dashed var(--sen);
+.g-1 { --g: #b4506f; --g-usu: #fbeef2; --g-sen: #ecc4d1; }
+.g-2 { --g: #b23a2e; --g-usu: #f7ece7; --g-sen: #ecc5bf; }
+.g-3 { --g: #2f5d8a; --g-usu: #e9eef5; --g-sen: #bdd0e4; }
+.g-4 { --g: #3f7a3a; --g-usu: #eaf2e4; --g-sen: #c3dcc0; }
+.g-5 { --g: #5b4370; --g-usu: #efe9f5; --g-sen: #d2c5e0; }
+.g-6 { --g: #8a6a10; --g-usu: #fbf3dc; --g-sen: #e6d5a0; }
+
+/* 道。● が昇級した日、● と ● のあいだの線が「その級にいた日数」(長いほど長くいた) */
+.tl { list-style: none; margin: 0; padding: 14px 14px 12px; }
+.tl li { display: grid; grid-template-columns: 46px 22px 1fr; column-gap: 8px; }
+.tl-rail { position: relative; }
+.tl-rail::before {                       /* 道の線 */
+  content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 4px; margin-left: -2px;
+  background: var(--g-sen);
 }
-.g-row:first-child { border-top: 0; }
-.g-date { text-align: right; line-height: 1.25; padding-top: 3px; }
-.g-date b { display: block; font-family: "M PLUS Rounded 1c", system-ui, sans-serif; font-size: .92rem; color: var(--sumi-2); }
-.g-date span { font-size: .64rem; font-weight: 500; color: var(--usu); }
-.g-rank { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-.g-rank .n-name { font-size: 1.15rem; }
-.g-1 { --g: #b4506f; --g-usu: #fbeef2; }
-.g-2 { --g: #b23a2e; --g-usu: #f7ece7; }
-.g-3 { --g: #2f5d8a; --g-usu: #e9eef5; }
-.g-4 { --g: #3f7a3a; --g-usu: #eaf2e4; }
-.g-5 { --g: #5b4370; --g-usu: #efe9f5; }
-.g-6 { --g: #8a6a10; --g-usu: #fbf3dc; }
+.tl-node:first-child .tl-rail::before { top: 14px; border-radius: 2px 2px 0 0; }
+.tl-node .tl-rail::after {               /* 昇級の ● */
+  content: ""; position: absolute; left: 50%; top: 5px; width: 18px; height: 18px; margin-left: -9px;
+  border-radius: 50%; background: var(--kami-2); border: 4px solid var(--g); box-sizing: border-box;
+}
+.tl-date { text-align: right; line-height: 1.2; padding-top: 4px; }
+.tl-date b { display: block; font-family: "M PLUS Rounded 1c", system-ui, sans-serif; font-size: .92rem; color: var(--sumi-2); }
+.tl-date span { font-size: .62rem; font-weight: 500; color: var(--usu); }
+.tl-rank { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-height: 28px; }
+.tl-rank .n-name { font-size: 1.2rem; line-height: 1.3; }
+.tl-stay { display: flex; align-items: center; font-size: .74rem; font-weight: 500; color: var(--usu); }
+.tl-stay b { font-weight: 700; color: var(--sumi-2); margin-right: 3px; }
+/* いまの級。線は点線で、まだ先につづく */
+.tl-seg.is-ima .tl-rail::before {
+  background: repeating-linear-gradient(var(--g) 0 5px, transparent 5px 10px);
+}
+.tl-seg.is-ima .tl-stay, .tl-seg.is-ima .tl-stay b { color: var(--g); font-weight: 700; }
+.tl-node.is-ima .tl-rail::after { background: var(--g); }
+.tl-node.is-ima .n-name { color: var(--g); }
 .k-fast { background: var(--shu-usu); color: var(--shu); }
-.k-bar { display: flex; align-items: center; gap: 8px; width: 100%; margin-top: 6px; }
-.k-bar i { display: block; height: 6px; border-radius: 3px; background: var(--sen-2); flex: none; max-width: calc(100% - 72px); }
-.k-bar.is-ima i { background: var(--g, var(--shu)); opacity: .6; }
-.k-bar.is-ima .k-bar-t { color: var(--g, var(--shu)); font-weight: 700; }
-.k-bar-t { font-size: .72rem; font-weight: 500; color: var(--usu); white-space: nowrap; }
+.tl-note { font-size: .74rem; font-weight: 500; color: var(--usu); line-height: 1.7; text-align: center; }
+.tl-note i { font-style: normal; color: var(--sumi-2); font-weight: 700; }
+.k-jump {
+  display: inline-block; margin-top: 8px; font-size: .74rem; color: var(--shu); text-decoration: none;
+  border: 1px solid var(--sen-2); border-radius: 999px; padding: 4px 14px; background: var(--kami);
+}
 
 .k-now {
   text-align: center; background: var(--kami-2); border: 1px solid var(--sen);
@@ -102,12 +121,8 @@
 .k-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; justify-content: center; margin-top: 6px; font-size: .74rem; color: var(--sumi-2); }
 .k-legend i { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: 3px; margin-right: 5px; }
 
-.k-days { font-size: .7rem; font-weight: 500; color: var(--usu); margin-left: auto; white-space: nowrap; }
 .k-where { display: block; font-size: .7rem; font-weight: 500; color: var(--usu); margin-top: 2px; }
 .k-memo { display: block; font-size: .74rem; font-weight: 500; color: var(--sumi-2); line-height: 1.7; margin-top: 3px; }
-.n-row .n-body { flex-wrap: wrap; }
-.k-main { display: flex; align-items: baseline; gap: 8px; width: 100%; }
-.k-year-md { display: block; font-size: .64rem; color: var(--usu); font-weight: 500; }
 
 .k-empty {
   background: var(--kami-2); border: 1px dashed var(--sen-2); border-radius: var(--radius);
@@ -135,7 +150,7 @@
 
 <script>
 /*!
- * 級の記録。中身は下の KIROKU に書く (このファイルだけ直せばよい)。
+ * ひなの歴史 (級の記録)。中身は下の KIROKU に書く (このファイルだけ直せばよい)。
  *
  * 1 行 = 1 回の昇級・昇段 (いちばん最初の「はじめて級をもらった」も 1 行)。
  *   date  … 'YYYY-MM-DD'。日がわからなければ 'YYYY-MM' でもよい
@@ -254,6 +269,9 @@ const KIROKU = {
     card.appendChild(el('div', 'k-now-sub',
       now.d.getFullYear() + '年' + dateText(now) + 'に昇級' + (now.where ? '（' + now.where + '）' : '')
       + '　・　' + now.rank + 'になって ' + now.stay + '日'));
+    const jump = el('a', 'k-jump', 'いまのところへ ↓');
+    jump.href = '#ima';
+    card.appendChild(jump);
     body.appendChild(card);
 
     const ups = rows.filter((r) => r.days !== null);
@@ -269,7 +287,7 @@ const KIROKU = {
     };
     stat(String(ups.length) + '回', rows.some((r) => r.v > 0) ? '昇級・昇段' : '昇級');
     stat(span(Math.round((now.d - first.d) / DAY)), first.rank + 'から');
-    stat(owatta.length ? Math.round(owatta.reduce((a, r) => a + r.stay, 0) / owatta.length) + '日' : '—', '1つの級にいた日数 (平均)');
+    stat(owatta.length ? Math.round(owatta.reduce((a, r) => a + r.stay, 0) / owatta.length) + '日' : '—', '1つの級に (平均)');
     if (owatta.length) {
       // いまの級はまだ途中なので入れない。同じ日数の級が2つ以上あれば、ならべて出す
       const hayai = Math.min.apply(null, owatta.map((r) => r.stay));
@@ -283,7 +301,11 @@ const KIROKU = {
     body.appendChild(el('div', 'zukan-fam', 'あがってきた道'));
     body.appendChild(chart(rows, places));
 
-    body.appendChild(el('div', 'zukan-fam', '学年ごとの記録'));
+    body.appendChild(el('div', 'zukan-fam', '学年ごとの道のり'));
+    const note = el('p', 'tl-note');
+    note.innerHTML = '上から下へ、古い順だよ。<i>○</i> が昇級した日で、'
+      + '<i>○</i> と <i>○</i> のあいだの線が長いほど、その級に長くいたよ';
+    body.appendChild(note);
     body.appendChild(nenpyo(rows, places));
   }
 
@@ -391,17 +413,18 @@ const KIROKU = {
     return n <= 0 ? '小学校に入る前' : nendo + '年度';
   }
 
-  /** 学年ごとに箱を分けた年表。新しい学年・新しい級が上。 */
+  /**
+   * 学年ごとの道のり。上から下へ、古い順 (読む向きと、時間の進む向きを同じにする)。
+   * ○ が昇級した日。○ の下の線が、その級にいた日数で、長くいたほど線も長い。
+   */
   function nenpyo(rows, places) {
     const wrap = el('div', 'g-wrap');
-    // 棒は、いちばん長くいた級を 100% にする
-    const maxDays = Math.max.apply(null, rows.map((r) => r.stay)) || 1;
     const nendos = [];
     for (const r of rows) { r.nendo = nendoOf(r.d); if (nendos.indexOf(r.nendo) < 0) nendos.push(r.nendo); }
     const imaNendo = nendoOf(new Date());
+    const saigo = rows[rows.length - 1];
 
-    for (let k = nendos.length - 1; k >= 0; k--) {
-      const nd = nendos[k];
+    for (const nd of nendos) {
       const these = rows.filter((r) => r.nendo === nd);
       const before = rows.filter((r) => r.nendo < nd);
       const g = KIROKU.gakunen ? KIROKU.gakunen.nen + (nd - KIROKU.gakunen.nendo) : 0;
@@ -420,21 +443,27 @@ const KIROKU = {
       head.appendChild(sum);
       box.appendChild(head);
 
-      const ol = el('ol', 'g-list');
-      for (let t = these.length - 1; t >= 0; t--) ol.appendChild(row(these[t], rows.indexOf(these[t])));
+      const ol = el('ol', 'tl');
+      for (const r of these) {
+        ol.appendChild(node(r, rows.indexOf(r)));
+        ol.appendChild(seg(r));
+      }
       box.appendChild(ol);
       wrap.appendChild(box);
     }
     return wrap;
 
-    function row(r, i) {
-      const li = el('li', 'g-row');
-      const dt = el('span', 'g-date');
+    /** 昇級した日の行: 日付 / ○ / 級と札 */
+    function node(r, i) {
+      const li = el('li', 'tl-node' + (r === saigo ? ' is-ima' : ''));
+      if (r === saigo) li.id = 'ima';
+      const dt = el('span', 'tl-date');
       dt.appendChild(el('b', null, (r.d.getMonth() + 1) + '/' + (r.date.split('-').length > 2 ? r.d.getDate() : '')));
       dt.appendChild(el('span', null, String(r.d.getFullYear())));   // 年はおまけ
       li.appendChild(dt);
-      const b = el('span', 'g-body');
-      const main = el('span', 'g-rank');
+      li.appendChild(el('span', 'tl-rail'));
+      const b = el('span', 'tl-body');
+      const main = el('span', 'tl-rank');
       main.appendChild(el('span', 'n-name', r.rank));
       // 同じ月に2回目 (3回目) の昇級なら「ダブル昇級」(「トリプル昇級」)。
       // それ以外で前の級から14日以内なら「スピード昇級」
@@ -447,17 +476,23 @@ const KIROKU = {
       else if (r.days !== null && r.days <= 14) main.appendChild(el('span', 'n-renpa k-fast', 'スピード昇級'));
       if (r.days === null) main.appendChild(el('span', 'n-renpa', 'スタート'));
       b.appendChild(main);
-      // 棒は、その級にいた日数 (在籍日数)。いまの級は今日までで、色を変える
-      const bar = el('span', 'k-bar' + (r.ima ? ' is-ima' : ''));
-      const fill = el('i');
-      fill.style.width = Math.max(3, r.stay / maxDays * 100) + '%';
-      bar.appendChild(fill);
-      bar.appendChild(el('span', 'k-bar-t', r.stay + '日' + (r.ima ? '（いま在籍中）' : '')));
-      bar.title = r.rank + 'にいた日数 ' + r.stay + '日';
-      b.appendChild(bar);
       if (r.where && places.length > 1) b.appendChild(el('span', 'k-where', r.where));
       if (r.memo) b.appendChild(el('span', 'k-memo', r.memo));
       li.appendChild(b);
+      return li;
+    }
+
+    /** ○ と ○ のあいだ: その級にいた日数。線の長さは日数に合わせる (長すぎないよう 150 日で止める) */
+    function seg(r) {
+      const li = el('li', 'tl-seg' + (r.ima ? ' is-ima' : ''));
+      li.style.minHeight = Math.round(24 + Math.min(r.stay, 150) * 0.45) + 'px';
+      li.appendChild(el('span'));
+      li.appendChild(el('span', 'tl-rail'));
+      const t = el('span', 'tl-stay');
+      t.appendChild(el('b', null, r.stay + '日'));
+      t.appendChild(document.createTextNode(r.ima ? '（いま在籍中）' : ''));
+      t.title = r.rank + 'にいた日数 ' + r.stay + '日';
+      li.appendChild(t);
       return li;
     }
   }
