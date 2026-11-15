@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>級の記録 - ひな将棋</title>
+<title>ひなの歴史 - ひな将棋</title>
 <meta name="description" content="将棋の級位・段位があがってきた記録">
 <meta name="theme-color" content="#faf8f3">
 <link rel="icon" href="./icon-192.png">
@@ -19,21 +19,45 @@
 <style>
 /* ---------------- 級の記録 ---------------- */
 
-.k-nenpyo .k-yhead {
-  display: flex; align-items: baseline; gap: 10px; margin: 6px 0 10px -4px; position: relative;
+/* 学年ごとの箱。箱のふちの色で学年を見分ける */
+.g-box {
+  background: var(--kami-2); border: 1px solid var(--sen); border-left: 5px solid var(--g);
+  border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; margin-top: 12px;
 }
-.k-nenpyo .k-yhead:not(:first-child) { margin-top: 16px; }
-.k-yhead b {
-  font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif; font-size: 1.05rem;
-  color: #fff; background: var(--shu); border-radius: 999px; padding: 3px 14px; letter-spacing: .06em;
+.g-head {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 10px 14px; background: var(--g-usu);
 }
-.k-yhead span { font-size: .74rem; font-weight: 500; color: var(--usu); }
-.k-md b { font-family: "M PLUS Rounded 1c", system-ui, sans-serif; font-size: .9rem; }
+.g-nen {
+  font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif;
+  font-size: 1.3rem; color: var(--g); letter-spacing: .06em; line-height: 1.2;
+}
+.g-nendo { font-size: .7rem; font-weight: 500; color: var(--usu); }
+.g-ima { font-size: .68rem; color: #fff; background: var(--g); border-radius: 999px; padding: 2px 9px; }
+.g-sum { margin-left: auto; text-align: right; font-size: .78rem; color: var(--sumi-2); line-height: 1.5; }
+.g-sum small { display: block; font-size: .68rem; font-weight: 500; color: var(--usu); }
+.g-list { list-style: none; margin: 0; padding: 2px 14px 6px; }
+.g-row {
+  display: grid; grid-template-columns: 50px 1fr; gap: 10px; align-items: start;
+  padding: 10px 0; border-top: 1px dashed var(--sen);
+}
+.g-row:first-child { border-top: 0; }
+.g-date { text-align: right; line-height: 1.25; padding-top: 3px; }
+.g-date b { display: block; font-family: "M PLUS Rounded 1c", system-ui, sans-serif; font-size: .92rem; color: var(--sumi-2); }
+.g-date span { font-size: .64rem; font-weight: 500; color: var(--usu); }
+.g-rank { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.g-rank .n-name { font-size: 1.15rem; }
+.g-1 { --g: #b4506f; --g-usu: #fbeef2; }
+.g-2 { --g: #b23a2e; --g-usu: #f7ece7; }
+.g-3 { --g: #2f5d8a; --g-usu: #e9eef5; }
+.g-4 { --g: #3f7a3a; --g-usu: #eaf2e4; }
+.g-5 { --g: #5b4370; --g-usu: #efe9f5; }
+.g-6 { --g: #8a6a10; --g-usu: #fbf3dc; }
 .k-fast { background: var(--shu-usu); color: var(--shu); }
 .k-bar { display: flex; align-items: center; gap: 8px; width: 100%; margin-top: 6px; }
 .k-bar i { display: block; height: 6px; border-radius: 3px; background: var(--sen-2); flex: none; max-width: calc(100% - 72px); }
-.k-bar.is-ima i { background: var(--shu); opacity: .55; }
-.k-bar.is-ima .k-bar-t { color: var(--shu); }
+.k-bar.is-ima i { background: var(--g, var(--shu)); opacity: .6; }
+.k-bar.is-ima .k-bar-t { color: var(--g, var(--shu)); font-weight: 700; }
 .k-bar-t { font-size: .72rem; font-weight: 500; color: var(--usu); white-space: nowrap; }
 
 .k-now {
@@ -96,10 +120,10 @@
 
 <div id="app">
   <header class="site-head">
-    <h1 class="site-title" id="k-title">級の記録<small>きゅう・だん の あゆみ</small></h1>
+    <h1 class="site-title" id="k-title">ひなの歴史<small>きゅう・だん の あゆみ</small></h1>
     <nav class="site-nav">
       <a href="./">タイトル年表</a>
-      <a href="./kyu.html" aria-current="page">級の記録</a>
+      <a href="./kyu.html" aria-current="page">ひなの歴史</a>
       <a href="./shoritsu.html">勝率チェック</a>
     </nav>
   </header>
@@ -122,6 +146,8 @@
  */
 const KIROKU = {
   title: 'ひなの歴史',  // ページの見出し。空なら「級の記録」
+  // 学年。この年度 (4月〜3月) に何年生か。ここから前の学年を数える
+  gakunen: { nendo: 2026, nen: 4 },
   rows: [
     // { date: '2024-04-14', rank: '15級', where: '〇〇将棋教室', memo: 'はじめての級' },
     { date: '2024-09-29', rank: '17級' },  // 令和6年9月29日
@@ -257,7 +283,7 @@ const KIROKU = {
     body.appendChild(el('div', 'zukan-fam', 'あがってきた道'));
     body.appendChild(chart(rows, places));
 
-    body.appendChild(el('div', 'zukan-fam', '年表'));
+    body.appendChild(el('div', 'zukan-fam', '学年ごとの記録'));
     body.appendChild(nenpyo(rows, places));
   }
 
@@ -352,30 +378,63 @@ const KIROKU = {
     return v < 0 ? (-v) + '級' : (K[v] || v) + '段';
   }
 
-  /** タイトル年表と同じ見た目の、たての年表。新しいのが上。 */
-  /** タイトル年表と同じ見た目の、たての年表。新しいのが上。年ごとに見出しで区切る */
+  /** 年度。4月から次の3月までを 1 年と数える (学校と同じ) */
+  function nendoOf(d) { return d.getMonth() >= 3 ? d.getFullYear() : d.getFullYear() - 1; }
+  const NEN = ['', '1年生', '2年生', '3年生', '4年生', '5年生', '6年生'];
+  function nenOf(nendo) {
+    const g = KIROKU.gakunen;
+    const n = g ? g.nen + (nendo - g.nendo) : null;
+    if (n === null) return nendo + '年度';
+    if (n >= 1 && n <= 6) return NEN[n];
+    if (n >= 7 && n <= 9) return '中学' + (n - 6) + '年生';
+    if (n >= 10 && n <= 12) return '高校' + (n - 9) + '年生';
+    return n <= 0 ? '小学校に入る前' : nendo + '年度';
+  }
+
+  /** 学年ごとに箱を分けた年表。新しい学年・新しい級が上。 */
   function nenpyo(rows, places) {
-    const ol = el('ol', 'nenpyo k-nenpyo');
-    // かかった日数の棒は、いちばん長くかかった回を 100% にする
+    const wrap = el('div', 'g-wrap');
+    // 棒は、いちばん長くいた級を 100% にする
     const maxDays = Math.max.apply(null, rows.map((r) => r.stay)) || 1;
-    let year = null;
-    for (let i = rows.length - 1; i >= 0; i--) {
-      const r = rows[i];
-      const y = r.d.getFullYear();
-      if (y !== year) {
-        year = y;
-        const n = rows.filter((x) => x.d.getFullYear() === y && x.days !== null).length;
-        const h = el('li', 'k-yhead');
-        h.appendChild(el('b', null, y + '年'));
-        if (n) h.appendChild(el('span', null, n + '回 昇級'));
-        ol.appendChild(h);
-      }
-      const li = el('li', 'n-row');
-      const yr = el('span', 'n-year k-md');
-      yr.appendChild(el('b', null, (r.d.getMonth() + 1) + '/' + (r.date.split('-').length > 2 ? r.d.getDate() : '')));
-      li.appendChild(yr);
-      const b = el('span', 'n-body');
-      const main = el('span', 'k-main');
+    const nendos = [];
+    for (const r of rows) { r.nendo = nendoOf(r.d); if (nendos.indexOf(r.nendo) < 0) nendos.push(r.nendo); }
+    const imaNendo = nendoOf(new Date());
+
+    for (let k = nendos.length - 1; k >= 0; k--) {
+      const nd = nendos[k];
+      const these = rows.filter((r) => r.nendo === nd);
+      const before = rows.filter((r) => r.nendo < nd);
+      const g = KIROKU.gakunen ? KIROKU.gakunen.nen + (nd - KIROKU.gakunen.nendo) : 0;
+      const box = el('section', 'g-box g-' + (g >= 1 && g <= 6 ? g : 2));
+
+      const head = el('div', 'g-head');
+      head.appendChild(el('span', 'g-nen', nenOf(nd)));
+      head.appendChild(el('span', 'g-nendo', nd + '年度'));
+      if (nd === imaNendo) head.appendChild(el('span', 'g-ima', 'いま'));
+      // その学年のはじめの級 → おわり (いま) の級
+      const start = before.length ? before[before.length - 1].rank : these[0].rank;
+      const end = these[these.length - 1].rank;
+      const n = these.filter((r) => r.days !== null).length;
+      const sum = el('span', 'g-sum', start === end ? end : start + ' → ' + end);
+      sum.appendChild(el('small', null, n ? n + '回 昇級' : 'はじめての級'));
+      head.appendChild(sum);
+      box.appendChild(head);
+
+      const ol = el('ol', 'g-list');
+      for (let t = these.length - 1; t >= 0; t--) ol.appendChild(row(these[t], rows.indexOf(these[t])));
+      box.appendChild(ol);
+      wrap.appendChild(box);
+    }
+    return wrap;
+
+    function row(r, i) {
+      const li = el('li', 'g-row');
+      const dt = el('span', 'g-date');
+      dt.appendChild(el('b', null, (r.d.getMonth() + 1) + '/' + (r.date.split('-').length > 2 ? r.d.getDate() : '')));
+      dt.appendChild(el('span', null, String(r.d.getFullYear())));   // 年はおまけ
+      li.appendChild(dt);
+      const b = el('span', 'g-body');
+      const main = el('span', 'g-rank');
       main.appendChild(el('span', 'n-name', r.rank));
       // 同じ月に2回目 (3回目) の昇級なら「ダブル昇級」(「トリプル昇級」)。
       // それ以外で前の級から14日以内なら「スピード昇級」
@@ -391,7 +450,7 @@ const KIROKU = {
       // 棒は、その級にいた日数 (在籍日数)。いまの級は今日までで、色を変える
       const bar = el('span', 'k-bar' + (r.ima ? ' is-ima' : ''));
       const fill = el('i');
-      fill.style.width = Math.max(4, r.stay / maxDays * 100) + '%';
+      fill.style.width = Math.max(3, r.stay / maxDays * 100) + '%';
       bar.appendChild(fill);
       bar.appendChild(el('span', 'k-bar-t', r.stay + '日' + (r.ima ? '（いま在籍中）' : '')));
       bar.title = r.rank + 'にいた日数 ' + r.stay + '日';
@@ -399,9 +458,8 @@ const KIROKU = {
       if (r.where && places.length > 1) b.appendChild(el('span', 'k-where', r.where));
       if (r.memo) b.appendChild(el('span', 'k-memo', r.memo));
       li.appendChild(b);
-      ol.appendChild(li);
+      return li;
     }
-    return ol;
   }
 
 
