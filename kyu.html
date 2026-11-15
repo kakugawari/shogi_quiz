@@ -32,6 +32,8 @@
 .k-fast { background: var(--shu-usu); color: var(--shu); }
 .k-bar { display: flex; align-items: center; gap: 8px; width: 100%; margin-top: 6px; }
 .k-bar i { display: block; height: 6px; border-radius: 3px; background: var(--sen-2); flex: none; max-width: calc(100% - 72px); }
+.k-bar.is-ima i { background: var(--shu); opacity: .55; }
+.k-bar.is-ima .k-bar-t { color: var(--shu); }
 .k-bar-t { font-size: .72rem; font-weight: 500; color: var(--usu); white-space: nowrap; }
 
 .k-now {
@@ -201,11 +203,19 @@ const KIROKU = {
 
     const places = [];
     for (const r of rows) if (places.indexOf(r.where) < 0) places.push(r.where);
-    // 同じ場所の 1 つ前の記録から何日かかったか
+    // days … 1 つ前の級から何日であがったか (札の「スピード昇級」に使う)
+    // stay … その級に何日いたか (在籍日数)。つぎの級にあがった日 − その級になった日。
+    //        いまの級は、今日までの日数 (まだ途中)
     const last = {};
+    const kyou = new Date();
+    kyou.setHours(0, 0, 0, 0);
     for (const r of rows) {
       const p = last[r.where];
       r.days = p ? Math.round((r.d - p.d) / DAY) : null;
+      if (p) p.stay = r.days;
+      r.stay = Math.max(0, Math.round((kyou - r.d) / DAY));
+      r.ima = true;
+      if (p) p.ima = false;
       last[r.where] = r;
     }
 
@@ -216,10 +226,12 @@ const KIROKU = {
     card.appendChild(el('div', 'k-now-who', 'いま'));
     card.appendChild(el('div', 'k-now-rank', now.rank));
     card.appendChild(el('div', 'k-now-sub',
-      now.d.getFullYear() + '年' + dateText(now) + 'に昇級' + (now.where ? '（' + now.where + '）' : '')));
+      now.d.getFullYear() + '年' + dateText(now) + 'に昇級' + (now.where ? '（' + now.where + '）' : '')
+      + '　・　' + now.rank + 'になって ' + now.stay + '日'));
     body.appendChild(card);
 
     const ups = rows.filter((r) => r.days !== null);
+    const owatta = rows.filter((r) => !r.ima);      // もう卒業した級 (在籍日数が決まっている)
     const stats = el('div', 'k-stats');
     stats.style.marginTop = '11px';
     const stat = (n, label, cls, sub) => {
@@ -231,14 +243,14 @@ const KIROKU = {
     };
     stat(String(ups.length) + '回', rows.some((r) => r.v > 0) ? '昇級・昇段' : '昇級');
     stat(span(Math.round((now.d - first.d) / DAY)), first.rank + 'から');
-    stat(ups.length ? Math.round(ups.reduce((a, r) => a + r.days, 0) / ups.length) + '日' : '—', '1つあがるのに (平均)');
-    if (ups.length) {
-      // 同じ日数の級が2つ以上あれば、ならべて出す
-      const hayai = Math.min.apply(null, ups.map((r) => r.days));
-      const nagai = Math.max.apply(null, ups.map((r) => r.days));
-      const kyuOf = (d) => ups.filter((r) => r.days === d).map((r) => r.rank).join('・');
-      stat(hayai + '日', 'いちばん早かった昇級', 'is-wide is-hayai', kyuOf(hayai));
-      stat(nagai + '日', 'いちばん長かった昇級', 'is-wide is-nagai', kyuOf(nagai));
+    stat(owatta.length ? Math.round(owatta.reduce((a, r) => a + r.stay, 0) / owatta.length) + '日' : '—', '1つの級にいた日数 (平均)');
+    if (owatta.length) {
+      // いまの級はまだ途中なので入れない。同じ日数の級が2つ以上あれば、ならべて出す
+      const hayai = Math.min.apply(null, owatta.map((r) => r.stay));
+      const nagai = Math.max.apply(null, owatta.map((r) => r.stay));
+      const kyuOf = (d) => owatta.filter((r) => r.stay === d).map((r) => r.rank).join('・');
+      stat(hayai + '日', 'いちばん短かった級', 'is-wide is-hayai', kyuOf(hayai));
+      stat(nagai + '日', 'いちばん長かった級', 'is-wide is-nagai', kyuOf(nagai));
     }
     body.appendChild(stats);
 
@@ -345,7 +357,7 @@ const KIROKU = {
   function nenpyo(rows, places) {
     const ol = el('ol', 'nenpyo k-nenpyo');
     // かかった日数の棒は、いちばん長くかかった回を 100% にする
-    const maxDays = Math.max.apply(null, rows.map((r) => r.days || 0)) || 1;
+    const maxDays = Math.max.apply(null, rows.map((r) => r.stay)) || 1;
     let year = null;
     for (let i = rows.length - 1; i >= 0; i--) {
       const r = rows[i];
@@ -376,15 +388,14 @@ const KIROKU = {
       else if (r.days !== null && r.days <= 14) main.appendChild(el('span', 'n-renpa k-fast', 'スピード昇級'));
       if (r.days === null) main.appendChild(el('span', 'n-renpa', 'スタート'));
       b.appendChild(main);
-      if (r.days !== null) {
-        const bar = el('span', 'k-bar');
-        const fill = el('i');
-        fill.style.width = Math.max(4, r.days / maxDays * 100) + '%';
-        bar.appendChild(fill);
-        bar.appendChild(el('span', 'k-bar-t', r.days + '日'));
-        bar.title = (rows[i - 1] ? rows[i - 1].rank : '') + 'から ' + r.days + '日';
-        b.appendChild(bar);
-      }
+      // 棒は、その級にいた日数 (在籍日数)。いまの級は今日までで、色を変える
+      const bar = el('span', 'k-bar' + (r.ima ? ' is-ima' : ''));
+      const fill = el('i');
+      fill.style.width = Math.max(4, r.stay / maxDays * 100) + '%';
+      bar.appendChild(fill);
+      bar.appendChild(el('span', 'k-bar-t', r.stay + '日' + (r.ima ? '（いま在籍中）' : '')));
+      bar.title = r.rank + 'にいた日数 ' + r.stay + '日';
+      b.appendChild(bar);
       if (r.where && places.length > 1) b.appendChild(el('span', 'k-where', r.where));
       if (r.memo) b.appendChild(el('span', 'k-memo', r.memo));
       li.appendChild(b);
