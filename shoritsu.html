@@ -110,7 +110,7 @@
     <h1 class="site-title">勝率チェック<small>リーグ戦の しょうりつ</small></h1>
     <nav class="site-nav">
       <a href="./">タイトル年表</a>
-      <a href="./kyu.html">級の記録</a>
+      <a href="./kyu.html">ひなの歴史</a>
       <a href="./shoritsu.html" aria-current="page">勝率チェック</a>
     </nav>
   </header>
@@ -183,6 +183,7 @@
     sc.setAttribute('aria-label', label + 'の数');
     sc.setAttribute('aria-valuemin', '0');
     sc.setAttribute('aria-valuemax', String(MAX));
+    sc.setAttribute('aria-valuenow', '0');
     sc.appendChild(el('div', 'drum-pad'));
     const items = [];
     for (let i = 0; i <= MAX; i++) {
