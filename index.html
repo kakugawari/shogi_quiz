@@ -92,29 +92,30 @@ body {
 @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
 
 /* ---------------- 料金表 ---------------- */
+/* 白い紙だと紺の地の上で光って見えるので、紺のすりガラスに金の線と生成りの字にする */
 .ryoukin {
-  width: 100%; margin-top: auto; color: var(--sumi);
-  background: var(--kami); border: 2px solid #2b3768; border-radius: 12px;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, .4);
-  background-image: repeating-linear-gradient(90deg, rgba(150, 130, 95, .05) 0 1px, transparent 1px 6px);
+  width: 100%; margin-top: auto; color: #e9e2cf;
+  background: linear-gradient(180deg, rgba(29, 37, 82, .78), rgba(16, 21, 50, .86));
+  border: 1px solid rgba(201, 166, 90, .55); border-radius: 14px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .35), inset 0 1px 0 rgba(230, 204, 140, .12);
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
   animation: rise .6s .4s both;
 }
-.ry-head { display: flex; align-items: center; gap: 12px; padding: 14px 18px 12px; border-bottom: 1px solid #cfd2dc; }
+.ry-head { display: flex; align-items: center; gap: 12px; padding: 14px 18px 12px; border-bottom: 1px solid rgba(201, 166, 90, .35); }
 .ry-han {
-  width: 34px; height: 34px; border-radius: 7px; flex: none; display: grid; place-items: center;
-  background: var(--shu); color: #fff; font-family: "Shippori Mincho B1", serif; font-size: .7rem; line-height: 1;
-  box-shadow: 0 2px 4px rgba(120, 40, 20, .3);
+  width: 32px; height: 32px; border-radius: 7px; flex: none; display: grid; place-items: center;
+  background: #9c4232; color: #f6e9dc; font-family: "Shippori Mincho B1", serif; font-size: .66rem; line-height: 1;
 }
-.ry-head h2 { font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif; font-size: 1.3rem; letter-spacing: .14em; }
-.ry-list { list-style: none; padding: 4px 18px 8px; }
+.ry-head h2 { font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif; font-size: 1.25rem; letter-spacing: .14em; color: var(--kin-hi); font-weight: 700; }
+.ry-list { list-style: none; padding: 2px 18px 8px; }
 .ry-list li {
   display: flex; align-items: baseline; gap: 10px; padding: 11px 0;
-  border-top: 1px dashed #e2dccb; font-size: .95rem;
+  border-top: 1px dashed rgba(201, 166, 90, .18); font-size: .92rem;
 }
 .ry-list li:first-child { border-top: 0; }
-.ry-list .ten { flex: 1; min-width: 12px; border-bottom: 2px dotted #d6cdb8; transform: translateY(-4px); }
-.ry-list .en { font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif; font-size: 1.45rem; line-height: 1; font-variant-numeric: tabular-nums; }
-.ry-list .en small { font-family: "M PLUS Rounded 1c", sans-serif; font-size: .72rem; font-weight: 500; color: var(--usu); margin-left: 3px; }
+.ry-list .ten { flex: 1; min-width: 12px; border-bottom: 2px dotted rgba(201, 166, 90, .3); transform: translateY(-4px); }
+.ry-list .en { font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif; font-size: 1.4rem; line-height: 1; font-variant-numeric: tabular-nums; color: #f4efe2; }
+.ry-list .en small { font-family: "M PLUS Rounded 1c", sans-serif; font-size: .7rem; font-weight: 500; color: #a9a08a; margin-left: 3px; }
 
 a:focus-visible { outline: 3px solid var(--kin-hi); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; } }
