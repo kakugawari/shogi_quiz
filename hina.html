@@ -345,7 +345,7 @@ const KIROKU = {
 
   /** 横が日付、たてが級の階段グラフ。上ほど強い。 */
   function chart(rows, places) {
-    const W = 340, H = 220, L = 40, R = 12, T = 10, B = 26;
+    const W = 340, H = 236, L = 40, R = 12, T = 26, B = 26;
     const t0 = rows[0].d.getTime(), t1 = Math.max(rows[rows.length - 1].d.getTime(), Date.now());
     const vs = rows.map((r) => r.v);
     const vlo = Math.min.apply(null, vs), vhi = Math.max.apply(null, vs);
@@ -370,9 +370,9 @@ const KIROKU = {
         if (b <= a) continue;
         const g = KIROKU.gakunen.nen + (nd - KIROKU.gakunen.nendo);
         const iro = GIRO[g] || ['#f2ece0', '#8a8072'];
-        svg.appendChild(s('rect', { x: x(a), y: T, width: Math.max(0, x(b) - x(a)), height: H - T - B, fill: iro[0] }));
+        svg.appendChild(s('rect', { x: x(a), y: 2, width: Math.max(0, x(b) - x(a)), height: H - B - 2, fill: iro[0] }));
         if (x(b) - x(a) > 26) {
-          svg.appendChild(s('text', { x: (x(a) + x(b)) / 2, y: T + 12, 'text-anchor': 'middle', class: 'ax-g', fill: iro[1] }, g >= 1 && g <= 6 ? g + '年' : nd + '年度'));
+          svg.appendChild(s('text', { x: (x(a) + x(b)) / 2, y: 16, 'text-anchor': 'middle', class: 'ax-g', fill: iro[1] }, g >= 1 && g <= 6 ? g + '年' : nd + '年度'));
         }
       }
     }
