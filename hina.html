@@ -351,16 +351,18 @@ const KIROKU = {
   /**
    * 学年ごとの歩み。級の階段のグラフを、横にすべらせて見る。
    * 左が古く、右が新しい。● が昇級した日、横の線がその級にいた日数。
-   * 横の長さは日数に合わせるが、短い級は字が重ならないよう、いちばん短くても MIN_W にする。
+   * 横の長さは日数に比べる (BASE + 日数 x PX_DAY。3日なら短く、120日なら長い)。
+   * 字は、階段が右上へのぼるので空いている所に置く: 級の名前と札は ● の左上、日付は右下、日数は線の上
    * うしろに学年ごとの色の帯を敷き、帯の上に学年の名前とその学年の「7級 → 2級・5回」を出す。
    */
   // (場所 where がちがう記録が混ざると、1 本の道にならべてしまう。いまの記録は場所が 1 つだけ)
   function nenpyo(rows) {
-    const MIN_W = 140;          // 1 つの級の横の長さの、いちばん短いとき (名前と札が入る長さ)
-    const PX_DAY = 1.4;         // 1 日ぶんの横の長さ
+    const BASE = 36;            // どの級にもある横の長さ (● どうしがくっつかないように)
+    const PX_DAY = 3;           // 1 日ぶんの横の長さ
+    const segW = (r) => BASE + r.stay * PX_DAY;
     const ROW_H = 26;           // 1 級ぶんの高さ。1 段ずつ上がっていくのが見えるように大きめ
     const AXIS = 42;            // 左の目盛り (すべらせても動かない) のはば
-    const PAD_L = AXIS + 14, PAD_R = 150, TOP = 78, BOTTOM = 50;
+    const PAD_L = AXIS + 130, PAD_R = 150, TOP = 84, BOTTOM = 72;
     const NS = 'http://www.w3.org/2000/svg';
     const s = (tag, attrs, text) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (text !== undefined) e.textContent = text; return e; };
 
@@ -374,13 +376,13 @@ const KIROKU = {
     // それぞれの級の左はし (昇級した日) の x
     const xs = [];
     let x = PAD_L;
-    for (const r of rows) { xs.push(x); x += Math.max(MIN_W, r.stay * PX_DAY); }
+    for (const r of rows) { xs.push(x); x += segW(r); }
     const W = x + PAD_R;
     // ある日が、横のどこにあたるか (その日をふくむ級の中で、日数の割合で決める)
     function xOfDate(t) {
       for (let i = rows.length - 1; i >= 0; i--) {
         if (t >= rows[i].d.getTime()) {
-          const w = Math.max(MIN_W, rows[i].stay * PX_DAY);
+          const w = segW(rows[i]);
           const f = rows[i].stay ? Math.min(1, (t - rows[i].d.getTime()) / DAY / rows[i].stay) : 0;
           return xs[i] + w * f;
         }
@@ -436,20 +438,20 @@ const KIROKU = {
     const ty = TOP;
     const tIro = gakuIro(last.d.getTime())[1];
     svg.appendChild(s('line', { x1: lx - 40, x2: W, y1: ty, y2: ty, class: 'mi-tsugi', stroke: tIro }));
-    svg.appendChild(s('text', { x: lx + 10, y: ty - 7, class: 'mi-tsugi-t', fill: tIro },
+    svg.appendChild(s('text', { x: lx + 14, y: ty - 7, class: 'mi-tsugi-t', fill: tIro },
       'つぎは ' + rankName(last.v === -1 ? 1 : last.v + 1)));
-    svg.appendChild(s('path', { d: 'M' + lx + ' ' + y(last) + ' H' + (lx + Math.max(MIN_W, last.stay * PX_DAY) + 30),
+    svg.appendChild(s('path', { d: 'M' + lx + ' ' + y(last) + ' H' + (lx + segW(last) + 40),
       class: 'mi-line is-ima', stroke: gakuIro(last.d.getTime())[1] }));
 
     rows.forEach((r, i) => {
       const x0 = xs[i], yy = y(r);
-      const w = Math.max(MIN_W, r.stay * PX_DAY);
+      const w = segW(r);
       const g = s('g', { class: 'mi-step' + (r.ima ? ' is-ima' : '') });
       g.style.setProperty('--gi', gakuIro(r.d.getTime())[1]);   // この級の学年の色
-      // 級の名前 (線の上)
-      const name = s('text', { x: x0 + 10, y: yy - 9, class: 'mi-rank' }, r.rank);
-      g.appendChild(name);
-      // 札: スタート / ダブル昇級 / スピード昇級 / いま
+      // 級の名前 (● の左上。階段は右上へのぼるので、ここはいつも空いている)
+      const nameW = r.rank.length * 16;
+      g.appendChild(s('text', { x: x0 - 10, y: yy - 8, 'text-anchor': 'end', class: 'mi-rank' }, r.rank));
+      // 札: スタート / ダブル昇級 / スピード昇級 / いま (名前のさらに左)
       const kaime = rows.filter((q, j) => j <= i && q.where === r.where
         && q.d.getFullYear() === r.d.getFullYear() && q.d.getMonth() === r.d.getMonth()).length;
       let fuda = null;
@@ -457,17 +459,17 @@ const KIROKU = {
       else if (kaime >= 2) fuda = [BAI[kaime] || kaime + '回目の昇級', 'is-fast'];
       else if (r.days <= 14) fuda = ['スピード昇級', 'is-fast'];
       if (r.ima) fuda = ['いま', 'is-ima'];
-      if (fuda) g.appendChild(pill(x0 + 10 + r.rank.length * 15 + 8, yy - 23, fuda[0], fuda[1]));
-      // 日付 (線の下、左)
+      if (fuda) g.appendChild(pill(x0 - 10 - nameW - 6, yy - 22, fuda[0], fuda[1], true));
+      // 日付 (● の右下)
       g.appendChild(s('text', { x: x0 + 8, y: yy + 18, class: 'mi-date' },
         (r.d.getMonth() + 1) + '/' + (r.date.split('-').length > 2 ? r.d.getDate() : '')));
       g.appendChild(s('text', { x: x0 + 8, y: yy + 31, class: 'mi-year' }, String(r.d.getFullYear())));
-      if (r.memo) g.appendChild(s('text', { x: x0 + 8, y: yy + 46, class: 'mi-memo' }, r.memo));   // ひとこと
-      // その級にいた日数 (線の下、右)
-      const t = s('text', { x: x0 + w - 8, y: yy + 18, 'text-anchor': 'end', class: 'mi-stay' }, r.stay + '日');
-      g.appendChild(t);
-      if (!r.ima && r.stay === mijikai) g.appendChild(pill(x0 + w - 8, yy + 24, 'いちばん短い', 'is-hayai', true));
-      if (!r.ima && r.stay === nagai) g.appendChild(pill(x0 + w - 8, yy + 24, 'いちばん長い', 'is-nagai', true));
+      // いちばん短い・長い (日付の下)
+      if (!r.ima && r.stay === mijikai) g.appendChild(pill(x0 + 8, yy + 37, 'いちばん短い', 'is-hayai'));
+      if (!r.ima && r.stay === nagai) g.appendChild(pill(x0 + 8, yy + 37, 'いちばん長い', 'is-nagai'));
+      if (r.memo) g.appendChild(s('text', { x: x0 + 8, y: yy + 66, class: 'mi-memo' }, r.memo));   // ひとこと
+      // その級にいた日数 (線の上、まん中)
+      g.appendChild(s('text', { x: x0 + Math.max(w, 30) / 2, y: yy - 6, 'text-anchor': 'middle', class: 'mi-stay' }, r.stay + '日'));
       // 昇級の ●
       g.appendChild(s('circle', { cx: x0, cy: yy, r: 7, class: 'mi-dot' }));
       svg.appendChild(g);
