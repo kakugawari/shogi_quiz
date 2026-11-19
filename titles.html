@@ -431,7 +431,7 @@
       + '「まだ」は、これから指すか、まだ決まっていないところ';
     $('nenpyo-count').textContent = years.length + '年ぶん';
     $('nenpyo-range').textContent =
-      years[years.length - 1] + '年度 〜 ' + years[0] + '年度。マスをおすと、大きな字で出るよ。'
+      years[years.length - 1] + '年度 〜 ' + years[0] + '年度。名前をおすと、その人の年表が出るよ。'
       + '棋聖戦は1994年度まで年2回あったので、ここでは後期を出している';
 
     const table = el('table', 'n-grid');
@@ -490,6 +490,9 @@
       li.appendChild(chip);
       li.appendChild(el('span', 'n-name', name));
       li.appendChild(el('span', 'n-ki', '通算' + tsuusan[name] + '期'));
+      li.appendChild(el('span', 'n-go', '›'));
+      li.classList.add('is-link');
+      li.addEventListener('click', () => goPerson(name));
       legend.appendChild(li);
     }
     list.appendChild(legend);
@@ -505,20 +508,10 @@
       + '一度取っただけの ' + shiroNin + '人は白のままだよ'));
     list.appendChild(p2);
 
+    // 名前をおすと、その人の年表へ
     table.addEventListener('click', (e) => {
       const td = e.target.closest('.n-cell');
-      if (!td) return;
-      const prev = table.querySelector('.is-pick');
-      if (prev) prev.classList.remove('is-pick');
-      td.classList.add('is-pick');
-      const from = Number(td.dataset.from);
-      const to = Number(td.dataset.to);
-      const n = to - from + 1;
-      const pick = $('nenpyo-pick');
-      pick.hidden = false;
-      pick.textContent = (n > 1 ? from + '〜' + to + '年度' : from + '年度')
-        + '　' + td.dataset.kisen + '　' + td.dataset.name
-        + (n > 1 ? '（' + n + '連覇）' : '');
+      if (td) goPerson(td.dataset.name);
     });
   }
 
@@ -568,6 +561,8 @@
         const nm = el('span', 'kt-name');
         if (iro) { nm.style.setProperty('--kt-bg', iro[0]); if (iro[1]) nm.style.setProperty('--kt-fg', iro[1]); }
         nm.appendChild(el('b', null, run.name));
+        nm.classList.add('is-link');
+        nm.addEventListener('click', () => goPerson(run.name));
         if (n > 1 && ue) nm.appendChild(el('span', 'kt-renpa', n + '連覇'));
         li.appendChild(nm);
         items.push(li);
@@ -585,18 +580,135 @@
       const li = el('li');
       li.appendChild(el('span', 'n-name', t.name));
       li.appendChild(el('span', 'n-ki', t.ki + '回'));
+      li.appendChild(el('span', 'n-go', '›'));
+      li.classList.add('is-link');
+      li.addEventListener('click', () => goPerson(t.name));
       top.appendChild(li);
     }
     list.appendChild(top);
   }
 
+  /* ============================================================
+     人ごとの年表。その人が、どの年度にどのタイトルを持っていたか
+     ============================================================ */
+
+  function buildPerson(name) {
+    const list = $('nenpyo-list');
+    list.innerHTML = '';
+    const iro = iroOf(name);
+
+    // 年度 → その年度に取ったタイトル (棋聖戦の前期・後期は 2 つと数える)
+    const nen = new Map();
+    const perTitle = [];
+    let total = 0;
+    for (const t of T.TITLES) {
+      const mine = t.holders.filter((h) => h.name === name);
+      if (!mine.length) continue;
+      perTitle.push({ name: t.name, n: mine.length });
+      total += mine.length;
+      for (const h of mine) {
+        if (!nen.has(h.year)) nen.set(h.year, []);
+        nen.get(h.year).push(t.name + (h.term ? '（' + h.term + '期）' : ''));
+      }
+    }
+    const years = [...nen.keys()].sort((a, b) => a - b);
+
+    $('nenpyo-note').textContent = '';
+    $('nenpyo-range').textContent = total
+      ? years[0] + '年度 〜 ' + years[years.length - 1] + '年度に、タイトルを通算 ' + total + ' 期。新しい年が上だよ'
+      : 'この人はタイトルを取っていないよ';
+
+    const back = el('button', 'p-back', '◀ もどる');
+    back.type = 'button';
+    back.addEventListener('click', () => {
+      if (history.state && history.state.fromApp) history.back();
+      else showNenpyo(prevTab || 'all');
+    });
+    list.appendChild(back);
+
+    const head = el('div', 'p-head');
+    if (iro) { head.style.setProperty('--kt-bg', iro[0]); if (iro[1]) head.style.setProperty('--kt-fg', iro[1]); }
+    head.appendChild(el('b', 'p-name', name));
+    const sum = el('span', 'p-total');
+    sum.appendChild(el('small', null, '通算'));
+    sum.appendChild(document.createTextNode(String(total)));
+    sum.appendChild(el('small', null, '期'));
+    head.appendChild(sum);
+    const chips = el('div', 'p-chips');
+    for (const pt of perTitle) chips.appendChild(el('span', 'p-chip', pt.name + ' ' + pt.n));
+    head.appendChild(chips);
+    list.appendChild(head);
+    if (!total) return;
+
+    // 1 年 1 行。タイトルのない年がつづくところは、1 行にまとめる
+    const ol = el('ol', 'kt p-kt');
+    let y = years[years.length - 1];
+    const first = years[0];
+    while (y >= first) {
+      if (nen.has(y)) {
+        const ts = nen.get(y);
+        const li = el('li', 'kt-row');
+        li.appendChild(el('span', 'kt-year', String(y)));
+        const box = el('span', 'kt-name p-row');
+        if (iro) { box.style.setProperty('--kt-bg', iro[0]); if (iro[1]) box.style.setProperty('--kt-fg', iro[1]); }
+        for (const t of ts) box.appendChild(el('span', 'p-t', t));
+        // 同じ年度に 2 つ以上なら「N冠」(棋聖の前期・後期はひとつと数える)
+        const kan = new Set(ts.map((t) => t.replace(/（.期）$/, ''))).size;
+        if (kan >= 2) box.appendChild(el('span', 'kt-renpa', kan + '冠'));
+        li.appendChild(box);
+        ol.appendChild(li);
+        y--;
+      } else {
+        let lo = y;
+        while (lo - 1 >= first && !nen.has(lo - 1)) lo--;
+        const gap = el('li', 'kt-gap');
+        const t = el('span');
+        t.appendChild(el('b', null, lo === y ? String(y) : lo + '〜' + y));
+        t.appendChild(document.createTextNode('タイトルなし'));
+        gap.appendChild(t);
+        ol.appendChild(gap);
+        y = lo - 1;
+      }
+    }
+    list.appendChild(ol);
+  }
+
+  /* ============================================================
+     切りかえ。アドレスのうしろ (#all / #ouza / #p=羽生善治) にいまの画面を書く。
+     人の年表へはブラウザの「もどる」でも帰れるように、履歴に積む
+     ============================================================ */
+
+  let prevTab = 'all';
+  const scrollOf = {};           // 表へもどったとき、もとの位置に帰すため
+
+  function goPerson(name) {
+    scrollOf[nenpyoTab] = window.scrollY;
+    history.pushState({ fromApp: true }, '', '#p=' + encodeURIComponent(name));
+    render(true);
+  }
+
   function showNenpyo(key) {
-    nenpyoTab = key || nenpyoTab || 'all';
+    history.replaceState(null, '', '#' + key);
+    render(false);
+  }
+
+  function keyOfHash() {
+    let h = '';
+    try { h = decodeURIComponent(location.hash.slice(1)); } catch (e) { h = ''; }
+    if (h.startsWith('p=')) return h;
+    return h === 'all' || T.TITLES.some((t) => t.key === h) ? h : 'all';
+  }
+
+  function render(toTop) {
+    const key = keyOfHash();
+    const person = key.startsWith('p=') ? key.slice(2) : null;
+    if (!person) prevTab = key;
+    nenpyoTab = key;
     const tabs = $('nenpyo-tabs');
     tabs.innerHTML = '';
     const list = [{ key: 'all', name: 'ぜんぶ' }].concat(T.TITLES);
     for (const t of list) {
-      const b = el('button', 'tab' + (t.key === nenpyoTab ? ' is-on' : ''), t.name);
+      const b = el('button', 'tab' + (!person && t.key === key ? ' is-on' : ''), t.name);
       b.type = 'button';
       b.dataset.tab = t.key;
       b.addEventListener('click', () => showNenpyo(t.key));
@@ -606,12 +718,16 @@
     const on = tabs.querySelector('.is-on');
     if (on) tabs.scrollLeft = on.offsetLeft - (tabs.clientWidth - on.offsetWidth) / 2;
     $('nenpyo-pick').hidden = true;
-    if (nenpyoTab === 'all') buildNenpyoAll();
-    else buildNenpyo(nenpyoTab);
+    if (person) buildPerson(person);
+    else if (key === 'all') buildNenpyoAll();
+    else buildNenpyo(key);
+    if (toTop) window.scrollTo(0, person ? 0 : (scrollOf[key] || 0));
   }
 
-  showNenpyo('all');
-  window.__nenpyo = { show: showNenpyo, SEI1: SEI1 };
+  window.addEventListener('popstate', () => render(true));
+  render(false);
+
+  window.__nenpyo = { show: showNenpyo, person: goPerson, SEI1: SEI1 };
 })();
 </script>
 </body>
