@@ -78,7 +78,7 @@ body {
 /* ---------------- Enter ---------------- */
 /* ボタンは 1 つだけ。小さく、金のふちで、ゆっくり光る */
 .enter {
-  margin: 6vh 0 auto; display: inline-block; text-decoration: none;
+  margin: auto 0 0; display: inline-block; text-decoration: none;   /* 空きはロゴの上と下に分け、Enter は料金表のすぐ上 */
   font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif; font-size: 1rem;
   letter-spacing: .3em; text-indent: .3em; color: var(--kin-hi);
   padding: 10px 30px; border: 1px solid var(--kin); border-radius: 999px;
@@ -95,7 +95,7 @@ body {
 /* ---------------- 料金表 ---------------- */
 /* 白い紙だと紺の地の上で光って見えるので、紺のすりガラスに金の線と生成りの字にする */
 .ryoukin {
-  width: 100%; margin-top: 24px; color: #e9e2cf;
+  width: 100%; margin-top: 22px; color: #e9e2cf;
   background: linear-gradient(180deg, rgba(29, 37, 82, .78), rgba(16, 21, 50, .86));
   border: 1px solid rgba(201, 166, 90, .55); border-radius: 14px;
   box-shadow: 0 10px 28px rgba(0, 0, 0, .35), inset 0 1px 0 rgba(230, 204, 140, .12);
