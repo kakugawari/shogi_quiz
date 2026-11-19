@@ -290,3 +290,31 @@ button:focus-visible, .tab:focus-visible, a:focus-visible { outline: 3px solid v
 
 
 #app > .screen { margin-top: 12px; }
+
+/* ---------------- 人ごとの年表 ---------------- */
+
+.is-link { cursor: pointer; }
+.n-legend li.is-link:active, .n-tally li.is-link:active { background: var(--kami-3); }
+.n-go { color: var(--sen-2); font-size: 1.1rem; margin-left: 4px; }
+.n-cell { cursor: pointer; }
+.p-back {
+  font: inherit; font-size: .78rem; color: var(--sumi-2); cursor: pointer; margin-top: 12px;
+  padding: 6px 14px; border: 1px solid var(--sen-2); border-radius: 999px; background: var(--kami-2);
+}
+.p-head {
+  margin-top: 10px; padding: 14px 16px; border-radius: var(--radius);
+  background: var(--kt-bg, var(--kami-2)); color: var(--kt-fg, var(--sumi));
+  border: 1px solid rgba(0, 0, 0, .08); box-shadow: var(--shadow);
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px;
+}
+.p-name { font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif; font-size: 1.6rem; letter-spacing: .06em; }
+.p-total { margin-left: auto; font-size: 1.8rem; font-weight: 800; line-height: 1; }
+.p-total small { font-size: .72rem; font-weight: 700; margin: 0 2px; }
+.p-chips { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 6px; }
+.p-chip { font-size: .74rem; padding: 3px 10px; border-radius: 999px; background: rgba(255, 255, 255, .7); }
+.p-row { flex-wrap: wrap; gap: 6px; }
+.p-t {
+  font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif; font-size: .9rem;
+  padding: 1px 9px; border-radius: 6px; background: rgba(255, 255, 255, .65);
+}
+.zukan-note:empty { display: none; }
