@@ -9,6 +9,10 @@
 <link rel="icon" href="./icon-192.png">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <meta name="apple-mobile-web-app-title" content="ひな将棋">
+<!-- ホーム画面に追加して開いたとき、時計や電池の帯の下まで画面を描く (app_template と同じ)。
+     無いと iOS は帯の下からページを始め、帯を theme-color の板で塗る。
+     上の安全域は site.css の env(safe-area-inset-top) で空けてある。
+     iOS は追加したときの設定を覚えているので、前に追加したアイコンは作り直さないと変わらない -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="manifest" href="./app.webmanifest">
@@ -33,6 +37,11 @@
 }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 html { background: var(--kon); }
+/* 時計や電池の帯の下に、地と同じ色の板を置く。下へすべらせた中身が時計と重ならないように */
+body::before {
+  content: ""; position: fixed; left: 0; right: 0; top: 0; height: env(safe-area-inset-top);
+  background: var(--kon); z-index: 10; pointer-events: none;
+}
 body {
   min-height: 100dvh; color: #f4efe2;
   font-family: "M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", "BIZ UDPGothic", system-ui, sans-serif;
@@ -63,10 +72,6 @@ body {
 /* ---------------- ロゴ ---------------- */
 .logo { margin-top: 12vh; width: min(82%, 380px); text-align: center; animation: fude .9s cubic-bezier(.2, .8, .3, 1) both; }
 .logo img { display: block; width: 100%; height: auto; }
-.logo p {
-  margin-top: 10px; font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif;
-  font-size: .82rem; letter-spacing: .5em; color: var(--kin-hi); text-indent: .5em;
-}
 @keyframes fude { from { opacity: 0; transform: translateY(10px) scale(.96); filter: blur(3px); } to { opacity: 1; transform: none; filter: none; } }
 
 /* ---------------- Enter ---------------- */
@@ -121,7 +126,6 @@ a:focus-visible { outline: 3px solid var(--kin-hi); outline-offset: 2px; }
 <main class="waku">
   <h1 class="logo">
     <img src="./title-logo.png" width="900" height="242" alt="ひな将棋">
-    <p>しょうぎ の きろく</p>
   </h1>
 
   <a class="enter" href="./hina.html">Enter</a>

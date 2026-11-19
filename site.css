@@ -41,6 +41,15 @@
 [hidden] { display: none !important; }
 
 html, body { height: 100%; }
+/* 地の色は html にも敷く (画面の下のはしまで和紙の色にする) */
+html { background-color: var(--kami); }
+/* 時計や電池の帯 (上の安全域) の下に、地と同じ色の板を置く。
+   帯の下まで描く設定 (black-translucent) にしているので、これが無いと
+   下へすべらせた中身が時計と重なる */
+body::before {
+  content: ""; position: fixed; left: 0; right: 0; top: 0; height: env(safe-area-inset-top);
+  background: var(--kami); z-index: 10; pointer-events: none;
+}
 
 body {
   font-family: "M PLUS Rounded 1c", "Hiragino Maru Gothic ProN", "BIZ UDPGothic",
@@ -198,7 +207,7 @@ body {
 .n-grid { border-collapse: collapse; width: 100%; table-layout: fixed; }
 .n-grid th, .n-grid td { border: 1px solid #fff; padding: 0; }
 .n-gh {                                   /* 赤い見出し。スクロールしても残る */
-  position: sticky; top: 0; z-index: 2;
+  position: sticky; top: env(safe-area-inset-top); z-index: 2;   /* 時計の帯の下で止める */
   font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif;
   font-size: .78rem; font-weight: 700; letter-spacing: .04em;
   color: #fff; background: var(--shu); border-color: var(--shu-dark);
