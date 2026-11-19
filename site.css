@@ -225,7 +225,11 @@ body {
 
 /* ---------------- ページのあいだの行き来 ---------------- */
 
-.site-head { text-align: center; padding: 6px 0 2px; }
+.site-head { text-align: center; padding: 6px 0 2px; position: relative; }
+.site-home {                     /* タイトル画面へもどる */
+  display: block; width: max-content; margin: 0 0 4px; font-size: .7rem; color: var(--usu); text-decoration: none;
+  padding: 4px 10px; border: 1px solid var(--sen); border-radius: 999px; background: var(--kami-2);
+}
 .site-title {
   font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif;
   font-size: 1.5rem; color: var(--sumi); letter-spacing: .1em;
