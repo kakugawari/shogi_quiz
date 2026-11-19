@@ -70,32 +70,23 @@ body {
 }
 
 /* ---------------- ロゴ ---------------- */
-/* ロゴと Enter は、料金表より上の空きのまん中に置く (上下の auto で空きを分ける) */
-.logo { margin-top: auto; width: min(82%, 380px); text-align: center; animation: fude .9s cubic-bezier(.2, .8, .3, 1) both; }
+/* ロゴは、料金表より上の空きのまん中に置く (上下の auto で空きを分ける) */
+.logo { margin-top: auto; width: min(96%, 470px); text-align: center; animation: fude .9s cubic-bezier(.2, .8, .3, 1) both; }
 .logo img { display: block; width: 100%; height: auto; }
 @keyframes fude { from { opacity: 0; transform: translateY(10px) scale(.96); filter: blur(3px); } to { opacity: 1; transform: none; filter: none; } }
 
-/* ---------------- Enter ---------------- */
-/* ボタンは 1 つだけ。小さく、金のふちで、ゆっくり光る */
-.enter {
-  margin: auto 0 0; display: inline-block; text-decoration: none;   /* 空きはロゴの上と下に分け、Enter は料金表のすぐ上 */
-  font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif; font-size: 1rem;
-  letter-spacing: .3em; text-indent: .3em; color: var(--kin-hi);
-  padding: 10px 30px; border: 1px solid var(--kin); border-radius: 999px;
-  background: rgba(16, 21, 50, .6); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
-  animation: rise .6s .3s both, hikari 2.8s 1s ease-in-out infinite;
-}
-.enter:active { transform: translateY(1px); }
-@keyframes hikari {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(230, 204, 140, 0); }
-  50% { box-shadow: 0 0 18px 2px rgba(230, 204, 140, .35); }
-}
+/* ---------------- どこでもタップ ---------------- */
+/* 画面ぜんたいが「ひなの歴史」へのリンク。ボタンは置かない */
+a.waku { text-decoration: none; color: inherit; cursor: pointer; }
+.tap { margin: 14px 0 auto; font-size: .7rem; letter-spacing: .4em; text-indent: .4em; color: rgba(230, 204, 140, .55);
+  animation: rise .6s .3s both, iki 2.8s 1.2s ease-in-out infinite; }
+@keyframes iki { 0%, 100% { opacity: .35; } 50% { opacity: .9; } }
 @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
 
 /* ---------------- 料金表 ---------------- */
 /* 白い紙だと紺の地の上で光って見えるので、紺のすりガラスに金の線と生成りの字にする */
 .ryoukin {
-  width: 100%; margin-top: 22px; color: #e9e2cf;
+  width: min(100%, 300px); margin-top: 22px; color: #e9e2cf;   /* 項目と金額が離れすぎないよう、はばをしぼる */
   background: linear-gradient(180deg, rgba(29, 37, 82, .78), rgba(16, 21, 50, .86));
   border: 1px solid rgba(201, 166, 90, .55); border-radius: 14px;
   box-shadow: 0 10px 28px rgba(0, 0, 0, .35), inset 0 1px 0 rgba(230, 204, 140, .12);
@@ -114,7 +105,7 @@ body {
   border-top: 1px dashed rgba(201, 166, 90, .18); font-size: .84rem;
 }
 .ry-list li:first-child { border-top: 0; }
-.ry-list .ten { flex: 1; min-width: 12px; border-bottom: 2px dotted rgba(201, 166, 90, .3); transform: translateY(-4px); }
+.ry-list .ten { flex: 1; min-width: 16px; border-bottom: 2px dotted rgba(201, 166, 90, .3); transform: translateY(-4px); }
 .ry-list .en { font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif; font-size: 1.12rem; line-height: 1; font-variant-numeric: tabular-nums; color: #f4efe2; }
 .ry-list .en small { font-family: "M PLUS Rounded 1c", sans-serif; font-size: .7rem; font-weight: 500; color: #a9a08a; margin-left: 3px; }
 
@@ -125,12 +116,12 @@ a:focus-visible { outline: 3px solid var(--kin-hi); outline-offset: 2px; }
 <body>
 <div class="e" aria-hidden="true"></div>
 
-<main class="waku">
+<a class="waku" href="./hina.html" aria-label="ひな将棋。おすと、ひなの歴史がひらく">
   <h1 class="logo">
     <img src="./title-logo.png" width="900" height="242" alt="ひな将棋">
   </h1>
 
-  <a class="enter" href="./hina.html">Enter</a>
+  <p class="tap" aria-hidden="true">タップしてひらく</p>
 
   <section class="ryoukin" aria-labelledby="ry-title">
     <div class="ry-head">
@@ -139,7 +130,7 @@ a:focus-visible { outline: 3px solid var(--kin-hi); outline-offset: 2px; }
     </div>
     <ul class="ry-list" id="ry-list"></ul>
   </section>
-</main>
+</a>
 
 <script>
 /* 料金表。値段が変わったらここだけ直す */
