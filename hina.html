@@ -400,8 +400,8 @@ const KIROKU = {
    */
   // (場所 where がちがう記録が混ざると、1 本の道にならべてしまう。いまの記録は場所が 1 つだけ)
   function nenpyo(rows) {
-    const BASE = 36;            // どの級にもある横の長さ (● どうしがくっつかないように)
-    const PX_DAY = 3;           // 1 日ぶんの横の長さ
+    const BASE = 20;            // どの級にもある横の長さ (● どうしがくっつかないように)
+    const PX_DAY = 1.5;         // 1 日ぶんの横の長さ
     const segW = (r) => BASE + r.stay * PX_DAY;
     const ROW_H = 26;           // 1 級ぶんの高さ。1 段ずつ上がっていくのが見えるように大きめ
     const AXIS = 42;            // 左の目盛り (すべらせても動かない) のはば
@@ -540,7 +540,7 @@ const KIROKU = {
       if (!r.ima && r.stay === nagai) g.appendChild(pill(x0 + 8, yy + 37, 'いちばん長い', 'is-nagai'));
       if (r.memo) g.appendChild(s('text', { x: x0 + 8, y: yy + 66, class: 'mi-memo' }, r.memo));   // ひとこと
       // その級にいた日数 (線の上、まん中)
-      g.appendChild(s('text', { x: x0 + Math.max(w, 30) / 2, y: yy - 6, 'text-anchor': 'middle', class: 'mi-stay' }, r.stay + '日'));
+      g.appendChild(s('text', { x: x0 + Math.max(w / 2, 24), y: yy - 6, 'text-anchor': 'middle', class: 'mi-stay' }, r.stay + '日'));
       // 昇級の ●
       g.appendChild(s('circle', { cx: x0, cy: yy, r: 7, class: 'mi-dot' }));
       svg.appendChild(g);
