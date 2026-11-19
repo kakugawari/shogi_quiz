@@ -69,31 +69,26 @@ body {
 }
 @keyframes fude { from { opacity: 0; transform: translateY(10px) scale(.96); filter: blur(3px); } to { opacity: 1; transform: none; filter: none; } }
 
-/* ---------------- メニュー ---------------- */
-.menu { width: 100%; margin-top: 6vh; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; animation: rise .6s .25s both; }
-.menu a {
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
-  text-decoration: none; color: #f4efe2; text-align: center;
-  padding: 12px 6px; border-radius: 14px;
-  background: rgba(16, 21, 50, .72); border: 1px solid rgba(201, 166, 90, .55);
-  -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+/* ---------------- Enter ---------------- */
+/* ボタンは 1 つだけ。小さく、金のふちで、ゆっくり光る */
+.enter {
+  margin: 7vh 0 28px; display: inline-block; text-decoration: none;
+  font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif; font-size: 1rem;
+  letter-spacing: .3em; text-indent: .3em; color: var(--kin-hi);
+  padding: 10px 30px; border: 1px solid var(--kin); border-radius: 999px;
+  background: rgba(16, 21, 50, .6); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+  animation: rise .6s .3s both, hikari 2.8s 1s ease-in-out infinite;
 }
-.menu a:active { transform: translateY(1px); }
-.menu b { font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif; font-size: 1.05rem; letter-spacing: .08em; }
-.menu small { font-size: .66rem; font-weight: 500; color: #bfb8a6; }
-.menu .is-main {            /* いちばん大事な「ひなの歴史」は、横いっぱいの金の札 */
-  grid-column: 1 / -1; padding: 16px 6px;
-  background: linear-gradient(180deg, var(--kin-hi), var(--kin)); color: #241c0c; border-color: #a8873e;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, .35);
+.enter:active { transform: translateY(1px); }
+@keyframes hikari {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(230, 204, 140, 0); }
+  50% { box-shadow: 0 0 18px 2px rgba(230, 204, 140, .35); }
 }
-.menu .is-main b { font-size: 1.35rem; }
-.menu .is-main small { color: #5a4718; }
-.menu .is-omake b { font-size: .95rem; }
 @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
 
 /* ---------------- 料金表 ---------------- */
 .ryoukin {
-  width: 100%; margin-top: 22px; color: var(--sumi);
+  width: 100%; margin-top: auto; color: var(--sumi);
   background: var(--kami); border: 2px solid #2b3768; border-radius: 12px;
   box-shadow: 0 10px 28px rgba(0, 0, 0, .4);
   background-image: repeating-linear-gradient(90deg, rgba(150, 130, 95, .05) 0 1px, transparent 1px 6px);
@@ -129,16 +124,12 @@ a:focus-visible { outline: 3px solid var(--kin-hi); outline-offset: 2px; }
     <p>しょうぎ の きろく</p>
   </h1>
 
-  <nav class="menu" aria-label="メニュー">
-    <a class="is-main" href="./hina.html"><b>ひなの歴史</b><small>いまの級と、あがってきた道のり</small></a>
-    <a href="./shoritsu.html"><b>勝率チェック</b><small>リーグ戦の勝ち・負け</small></a>
-    <a class="is-omake" href="./titles.html"><b>タイトル年表</b><small>おまけ・プロの歴代タイトル</small></a>
-  </nav>
+  <a class="enter" href="./hina.html">Enter</a>
 
   <section class="ryoukin" aria-labelledby="ry-title">
     <div class="ry-head">
       <span class="ry-han" aria-hidden="true">料金</span>
-      <h2 id="ry-title">伊勢志摩教室</h2>
+      <h2 id="ry-title">将棋教室</h2>
     </div>
     <ul class="ry-list" id="ry-list"></ul>
   </section>
@@ -152,7 +143,7 @@ const RYOUKIN = [
   ['月例会', 600],
   ['リーグ戦', 300],
   ['研究会', 500],
-  ['野崎師範指導', 1500]
+  ['師範指導', 1500]
 ];
 (function () {
   const ul = document.getElementById('ry-list');
