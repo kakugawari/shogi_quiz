@@ -6,7 +6,7 @@ GitHub Pages で公開している、タイトル画面と 3 枚のページで�
 
 | ファイル | 中身 |
 |---|---|
-| `index.html` | **タイトル画面** (アプリを開くと最初に出る)。「ひな将棋」のロゴ、Enter (ひなの歴史へ)、教室の料金表。料金は中の `RYOUKIN` で直す |
+| `index.html` | **タイトル画面** (アプリを開くと最初に出る)。「ひな将棋」のロゴと教室の料金表。画面のどこを押しても「ひなの歴史」へ。料金は中の `RYOUKIN` で直す |
 | `hina.html` | **ひなの歴史**。級位があがってきた記録 (いまの級、グラフ、学年ごとの道のり) |
 | `title-bg.jpg` / `title-logo.png` | タイトル画面の背景 (アイコンと同じ紺の盤) と、筆文字のロゴ |
 | `shoritsu.html` | リーグ戦の勝率チェック。勝ち・負けの数をドラムで回して選ぶ (数はその端末にだけ残る) |
@@ -48,6 +48,11 @@ iOS は `apple-touch-icon` に `data:` で埋めこんだ絵を受けつけな�
 | `icon-192.png` / `icon-512.png` | manifest 用 (Android・PWA) |
 | `app.webmanifest` | アプリ名・アイコンの一覧 |
 
+## 対象の端末
+
+**iPhone 16 Plus (430 x 932pt) だけ** (app_template の決めごとと同じ)。ほかの画面幅は見ない。
+見た目を確かめるときも、この大きさ (安全域 上59・下34) で見る。
+
 ## iPhone のホーム画面から開くとき
 
 app_template と同じやり方で、時計や電池の帯の下まで画面を描いている。
@@ -57,5 +62,6 @@ app_template と同じやり方で、時計や電池の帯の下まで画面を�
 - `<meta name="apple-mobile-web-app-capable" content="yes">` と
   `<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">`
 - 上の安全域を空ける `env(safe-area-inset-top)` (site.css の `#app` と `body::before`、タイトル画面の `.waku`)
+- すべらせない全画面の画面 (タイトル画面) は、`html, body` を `height: 100vh` と `position: relative` にして、中身を `absolute` で置く。`100dvh` や `%` は、ホーム画面から開くと上の安全域ぶん足りない (873) ことがある
 
 **iOS はホーム画面に追加したときの設定を覚えている。** これを変えたら、アイコンを一度消して追加し直さないと効かない。
