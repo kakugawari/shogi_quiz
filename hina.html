@@ -60,6 +60,26 @@
 .michi .mi-pill.is-ima rect { fill: var(--gi, var(--shu)); } .michi .mi-pill.is-ima text { fill: #fff; }
 .michi .mi-pill.is-fast rect, .michi .mi-pill.is-hayai rect { fill: #fff; stroke: #ecc5bf; } .michi .mi-pill.is-fast text, .michi .mi-pill.is-hayai text { fill: var(--shu); }
 .michi .mi-pill.is-nagai rect { fill: #fff; stroke: #bdd0e4; } .michi .mi-pill.is-nagai text { fill: var(--ai); }
+.michi .mi-ev-koma { fill: url(#kin); stroke: #a8873e; stroke-width: 1.5; stroke-linejoin: round; }
+.michi .mi-ev-moji { font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif; font-size: 14px; font-weight: 700; fill: #4a3410; }
+.michi .mi-ev-pole { stroke: #a8873e; stroke-width: 1.5; stroke-dasharray: 2 3; }
+.michi .mi-ev-name { font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif; font-size: 14px; font-weight: 700; fill: #7a5a18; }
+.michi .mi-ev-kekka { font-size: 10px; font-weight: 700; fill: #8a7550; }
+/* 大会・タイトル戦の一覧 */
+.k-ev { list-style: none; margin: 0; padding: 0; }
+.k-ev li {
+  display: flex; align-items: center; gap: 12px; padding: 10px 14px;
+  background: linear-gradient(90deg, #fbf3dc, var(--kami-2) 60%); border: 1px solid #e6d5a0; border-radius: 12px;
+}
+.k-ev li + li { margin-top: 8px; }
+.k-koma {                     /* 金の駒の形 */
+  flex: none; width: 30px; height: 36px; display: grid; place-items: end center; padding-bottom: 6px;
+  font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif; font-size: 1rem; color: #4a3410;
+  background: linear-gradient(180deg, #f2dc9a, #c9a65a);
+  clip-path: polygon(50% 0, 88% 20%, 100% 100%, 0 100%, 12% 20%);
+}
+.k-ev-b b { display: block; font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif; font-size: 1.05rem; color: #7a5a18; }
+.k-ev-b span { font-size: .72rem; font-weight: 500; color: var(--usu); }
 .michi-nav { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-top: 1px solid var(--sen); }
 .michi-btn {
   font: inherit; font-size: .74rem; color: var(--sumi-2); cursor: pointer; padding: 5px 12px;
@@ -150,6 +170,11 @@ const KIROKU = {
   title: 'ひなの歴史',  // ページの見出し。空なら「級の記録」
   // 学年。この年度 (4月〜3月) に何年生か。ここから前の学年を数える
   gakunen: { nendo: 2026, nen: 4 },
+  // 大会・タイトル戦など、級とは別の大きなできごと。グラフに金の駒の印で出る
+  //   date … 'YYYY-MM-DD'   name … 大会の名前   koma … 駒に書く 1 文字   kekka … ひとこと
+  dekigoto: [
+    { date: '2026-01-18', name: '香成戦', koma: '香', kekka: 'タイトル戦に出場' },  // 令和8年1月18日 (3年生)
+  ],
   rows: [
     // { date: '2024-04-14', rank: '15級', where: '〇〇将棋教室', memo: 'はじめての級' },
     { date: '2024-09-29', rank: '17級' },  // 令和6年9月29日
@@ -328,6 +353,24 @@ const KIROKU = {
 
     body.appendChild(el('div', 'zukan-fam', '学年ごとの歩み'));
     body.appendChild(nenpyo(rows));
+
+    // 大会・タイトル戦
+    const ev = (KIROKU.dekigoto || []).map((e) => Object.assign({}, e, { d: parseDate(e.date) })).sort((a, b) => a.d - b.d);
+    if (ev.length) {
+      body.appendChild(el('div', 'zukan-fam', '大会・タイトル戦'));
+      const ul = el('ul', 'k-ev');
+      for (const e of ev) {
+        const li = el('li');
+        li.appendChild(el('span', 'k-koma', e.koma || '王'));
+        const b = el('span', 'k-ev-b');
+        b.appendChild(el('b', null, e.name));
+        b.appendChild(el('span', null, e.d.getFullYear() + '年' + (e.d.getMonth() + 1) + '月' + e.d.getDate() + '日　'
+          + nenOf(nendoOf(e.d)) + (e.kekka ? '　' + e.kekka : '')));
+        li.appendChild(b);
+        ul.appendChild(li);
+      }
+      body.appendChild(ul);
+    }
   }
 
   function rankName(v) {
@@ -357,8 +400,8 @@ const KIROKU = {
    */
   // (場所 where がちがう記録が混ざると、1 本の道にならべてしまう。いまの記録は場所が 1 つだけ)
   function nenpyo(rows) {
-    const BASE = 36;            // どの級にもある横の長さ (● どうしがくっつかないように)
-    const PX_DAY = 3;           // 1 日ぶんの横の長さ
+    const BASE = 20;            // どの級にもある横の長さ (● どうしがくっつかないように)
+    const PX_DAY = 1.5;         // 1 日ぶんの横の長さ
     const segW = (r) => BASE + r.stay * PX_DAY;
     const ROW_H = 26;           // 1 級ぶんの高さ。1 段ずつ上がっていくのが見えるように大きめ
     const AXIS = 42;            // 左の目盛り (すべらせても動かない) のはば
@@ -392,6 +435,13 @@ const KIROKU = {
 
     const svg = s('svg', { width: W, height: H, viewBox: '0 0 ' + W + ' ' + H, class: 'michi', role: 'img',
       'aria-label': '級のうつりかわり。左が古く、右が新しい。横にすべらせて見てね' });
+    // 金の駒のぬり (大会・タイトル戦の印)
+    const defs = s('defs');
+    const kin = s('linearGradient', { id: 'kin', x1: 0, y1: 0, x2: 0, y2: 1 });
+    kin.appendChild(s('stop', { offset: '0', 'stop-color': '#f6e4a8' }));
+    kin.appendChild(s('stop', { offset: '1', 'stop-color': '#c9a65a' }));
+    defs.appendChild(kin);
+    svg.appendChild(defs);
 
     // 学年の帯
     const GIRO = GAKU_IRO;
@@ -418,6 +468,27 @@ const KIROKU = {
     for (let k = lo; k <= hi; k++) {
       const yy = TOP + (hi - k) * ROW_H;
       svg.appendChild(s('line', { x1: 0, x2: W, y1: yy, y2: yy, class: 'mi-grid' }));
+    }
+
+    // 大会・タイトル戦の印。その日にいた級の線の上に、金の駒を立てる
+    for (const e of (KIROKU.dekigoto || [])) {
+      const t = parseDate(e.date).getTime();
+      let at = null;
+      for (const r of rows) if (r.d.getTime() <= t) at = r;
+      if (!at) continue;
+      const mx = xOfDate(t), my = y(at);
+      const g = s('g', { class: 'mi-ev' });
+      g.appendChild(s('line', { x1: mx, x2: mx, y1: my - 22, y2: my, class: 'mi-ev-pole' }));
+      // 将棋の駒の形 (五角形)。字は駒の左に出す (右には次の級の名前が来るので)
+      const kx = mx, ky = my - 54, kw = 24, kh = 30;
+      g.appendChild(s('path', { class: 'mi-ev-koma',
+        d: 'M' + kx + ' ' + ky + ' L' + (kx + kw * 0.38) + ' ' + (ky + kh * 0.2) + ' L' + (kx + kw / 2) + ' ' + (ky + kh)
+          + ' L' + (kx - kw / 2) + ' ' + (ky + kh) + ' L' + (kx - kw * 0.38) + ' ' + (ky + kh * 0.2) + ' Z' }));
+      g.appendChild(s('text', { x: kx, y: ky + kh - 7, 'text-anchor': 'middle', class: 'mi-ev-moji' }, e.koma || '王'));
+      g.appendChild(s('text', { x: kx - 18, y: ky + 13, 'text-anchor': 'end', class: 'mi-ev-name' }, e.name));
+      g.appendChild(s('text', { x: kx - 18, y: ky + 27, 'text-anchor': 'end', class: 'mi-ev-kekka' },
+        (parseDate(e.date).getMonth() + 1) + '/' + parseDate(e.date).getDate() + ' タイトル戦'));
+      svg.appendChild(g);
     }
 
     // いちばん短かった級・長かった級 (上の札と同じ)。いまの級はまだ途中なので入れない
@@ -469,7 +540,7 @@ const KIROKU = {
       if (!r.ima && r.stay === nagai) g.appendChild(pill(x0 + 8, yy + 37, 'いちばん長い', 'is-nagai'));
       if (r.memo) g.appendChild(s('text', { x: x0 + 8, y: yy + 66, class: 'mi-memo' }, r.memo));   // ひとこと
       // その級にいた日数 (線の上、まん中)
-      g.appendChild(s('text', { x: x0 + Math.max(w, 30) / 2, y: yy - 6, 'text-anchor': 'middle', class: 'mi-stay' }, r.stay + '日'));
+      g.appendChild(s('text', { x: x0 + Math.max(w / 2, 24), y: yy - 6, 'text-anchor': 'middle', class: 'mi-stay' }, r.stay + '日'));
       // 昇級の ●
       g.appendChild(s('circle', { cx: x0, cy: yy, r: 7, class: 'mi-dot' }));
       svg.appendChild(g);
