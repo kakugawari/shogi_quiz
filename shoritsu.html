@@ -9,8 +9,12 @@
 <link rel="icon" href="./icon-192.png">
 <link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <meta name="apple-mobile-web-app-title" content="ひな将棋">
+<!-- ホーム画面に追加して開いたとき、時計や電池の帯の下まで画面を描く (app_template と同じ)。
+     無いと iOS は帯の下からページを始め、帯を theme-color の板で塗る。
+     上の安全域は site.css の env(safe-area-inset-top) で空けてある。
+     iOS は追加したときの設定を覚えているので、前に追加したアイコンは作り直さないと変わらない -->
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="manifest" href="./app.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

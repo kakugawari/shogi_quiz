@@ -46,3 +46,15 @@ iOS は `apple-touch-icon` に `data:` で埋めこんだ絵を受けつけな�
 | `apple-touch-icon.png` | ホーム画面に追加したときのアイコン (iOS) |
 | `icon-192.png` / `icon-512.png` | manifest 用 (Android・PWA) |
 | `app.webmanifest` | アプリ名・アイコンの一覧 |
+
+## iPhone のホーム画面から開くとき
+
+app_template と同じやり方で、時計や電池の帯の下まで画面を描いている。
+どのページにも次の 3 つが要る (1 つでも欠けると、画面のいちばん上が別の色の板になり、アプリがその下から始まる)。
+
+- `<meta name="viewport" content="..., viewport-fit=cover">`
+- `<meta name="apple-mobile-web-app-capable" content="yes">` と
+  `<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">`
+- 上の安全域を空ける `env(safe-area-inset-top)` (site.css の `#app` と `body::before`、タイトル画面の `.waku`)
+
+**iOS はホーム画面に追加したときの設定を覚えている。** これを変えたら、アイコンを一度消して追加し直さないと効かない。
