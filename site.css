@@ -93,13 +93,52 @@ body {
 }
 .zukan-fam::after { content: ""; flex: 1; height: 1px; background: var(--sen-2); }
 
-  font-family: "Shippori Mincho B1", serif; }
-@keyframes fall { to { transform: translateY(112vh) rotate(680deg); opacity: .85; } }
 
 /* ---------------- 年表（歴代タイトルホルダー） ---------------- */
 
-/* 棋戦は 8 つまで増える。3 列固定だとあふれるので、幅に合わせて折り返す */
-#nenpyo-tabs { grid-template-columns: repeat(auto-fit, minmax(64px, 1fr)); }
+/* 棋戦のタブは 11 こ。折り返すと 3 段になって場所をとるので、1 段にならべて横にすべらせる */
+#nenpyo-tabs {
+  display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none;
+  margin: 0 -14px; padding: 2px 14px 4px; scroll-padding: 0 14px;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 14px, #000 calc(100% - 22px), transparent);
+          mask-image: linear-gradient(90deg, transparent, #000 14px, #000 calc(100% - 22px), transparent);
+}
+#nenpyo-tabs::-webkit-scrollbar { display: none; }
+#nenpyo-tabs .tab { flex: none; padding: 8px 14px; }
+
+/* 棋戦ごとの年表。1 年 1 行。名前の帯は「ぜんぶ」の表と同じ色でぬり、
+   同じ人がつづいた年 (連覇) は帯をつなげて 1 本のかたまりに見せる */
+.kt { list-style: none; margin: 14px 0 0; padding: 0; }
+.kt-row { display: grid; grid-template-columns: 52px 1fr; align-items: stretch; }
+.kt-row:not(.is-run-mid):not(.is-run-bottom) .kt-year { padding-top: 4px; }
+.kt-year {
+  font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif;
+  font-size: .86rem; color: var(--sumi-2); text-align: right; padding: 0 10px 0 0; line-height: 1.2; align-self: center;
+}
+.kt-year small { font-size: .62rem; color: var(--usu); }
+.kt-name {
+  display: flex; align-items: center; gap: 8px; min-height: 34px; padding: 4px 12px;
+  background: var(--kt-bg, var(--kami-2)); color: var(--kt-fg, var(--sumi));
+  border: 1px solid rgba(0, 0, 0, .06); border-radius: 9px; margin-top: 4px;
+}
+.kt-name b {
+  font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif;
+  font-size: 1.02rem; letter-spacing: .04em;
+}
+.kt-row.is-run-mid .kt-name, .kt-row.is-run-bottom .kt-name { margin-top: 0; border-top-color: transparent; }
+.kt-row.is-run-top .kt-name, .kt-row.is-run-mid .kt-name { border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.kt-row.is-run-mid .kt-name, .kt-row.is-run-bottom .kt-name { border-top-left-radius: 0; border-top-right-radius: 0; }
+.kt-row.is-run-mid .kt-name b, .kt-row.is-run-bottom .kt-name b { opacity: .55; font-size: .9rem; }
+.kt-renpa {
+  margin-left: auto; font-size: .7rem; padding: 2px 9px; border-radius: 999px;
+  color: #fff; background: var(--kt-fg, var(--shu));
+}
+.kt-gap { display: grid; grid-template-columns: 52px 1fr; margin-top: 4px; }
+.kt-gap span {
+  grid-column: 2; font-size: .7rem; font-weight: 500; color: var(--usu); line-height: 1.5;
+  padding: 5px 12px; border: 1px dashed var(--sen-2); border-radius: 9px;
+}
+.kt-gap b { font-family: "Shippori Mincho B1", serif; margin-right: 6px; color: var(--sumi-2); }
 
 .n-range {
   margin: 10px 0 0; padding: 7px 10px; border-radius: 10px;

@@ -31,7 +31,7 @@
   </header>
 
   <section class="screen is-active" id="screen-nenpyo">
-    <div class="hud">
+    <div class="hud" hidden>
       <span class="hud-score" id="nenpyo-count"></span>
     </div>
     <div class="tabs" id="nenpyo-tabs"></div>
@@ -376,6 +376,19 @@
   };
   const MAMORU = '#ebe3d2';             // 防衛したことがある人の、共通のうすい色
 
+  /** 名前の帯の色。「ぜんぶ」の表と同じきまり: KOI の人はその色、
+      8 タイトルのどれかで 2 年つづけて守ったことがある人はうすい色、ほかは白 (null) */
+  let mamottaAll = null;
+  function iroOf(name) {
+    if (KOI[name]) return KOI[name];
+    if (!mamottaAll) {
+      mamottaAll = {};
+      const { per } = gridRows();
+      for (const key of GRID) for (const [year, nm] of per[key]) if (per[key].get(year + 1) === nm) mamottaAll[nm] = true;
+    }
+    return mamottaAll[name] ? [MAMORU, null] : null;
+  }
+
   /** 棋戦ごとに「年度 → 名前」を作る。棋聖戦の前期・後期は後期のほうを使う。 */
   function gridRows() {
     const per = {};
@@ -521,7 +534,7 @@
       to + '年度 〜 ' + from + '年度、' + title.holders.length + '回ぶん。新しい年が上だよ。'
       + 'タイトル戦になる前（一般棋戦だったころ）は入れていないよ';
 
-    const line = el('ol', 'nenpyo');
+    const line = el('ol', 'kt');
     const items = [];              // まず古い順に作って、最後にひっくり返す
     let prevYear = null;
     for (const run of runsOf(title.holders)) {
@@ -531,31 +544,32 @@
       // 年がとんでいるところには、その理由を書いた札をはさむ
       if (prevYear !== null) {
         for (let y = prevYear + 1; y < first.year; y++) {
-          const why = title.gaps[y];
-          const gap = el('li', 'n-gap');
-          gap.appendChild(el('b', null, String(y)));
-          gap.appendChild(document.createTextNode(why || 'この年度は行われていない'));
+          const gap = el('li', 'kt-gap');
+          const t = el('span');
+          t.appendChild(el('b', null, String(y)));
+          t.appendChild(document.createTextNode(title.gaps[y] || 'この年度は行われていない'));
+          gap.appendChild(t);
           items.push(gap);
         }
       }
       prevYear = last.year;
 
-      // 1 年に 1 行ずつ出す。まとめてしまうと、取った回数より少なく見えるため。
-      // 連覇はひとつづきに見えるよう、札の左に帯を引く。印は、上から読んで
-      // さいしょに目に入るところ = その連覇のいちばん新しい年に付ける
-      const renpa = run.rows.length > 1;
+      // 1 年に 1 行ずつ出す (まとめると、取った回数より少なく見えるため)。
+      // 名前の帯は「ぜんぶ」の表と同じ色。連覇は帯をつなげて 1 本に見せ、
+      // 名前を太く出すのと「N連覇」の印は、上から読んでさいしょの行 (いちばん新しい年) だけ
+      const iro = iroOf(run.name);
+      const n = run.rows.length;
       run.rows.forEach((h, i) => {
-        const ue = i === run.rows.length - 1;     // ひっくり返すと、ここが上にくる
-        const li = el('li', 'n-row' + (renpa ? ' is-run' : '')
-          + (renpa && ue ? ' is-run-top' : '')
-          + (renpa && i === 0 ? ' is-run-bottom' : ''));
-        const years = el('span', 'n-year');
-        years.appendChild(el('b', null, String(h.year) + h.term));
-        li.appendChild(years);
-        const body = el('span', 'n-body');
-        body.appendChild(el('span', 'n-name', run.name));
-        if (renpa && ue) body.appendChild(el('span', 'n-renpa', run.rows.length + '連覇'));
-        li.appendChild(body);
+        const ue = i === n - 1;     // ひっくり返すと、ここが上にくる
+        const li = el('li', 'kt-row' + (n > 1 ? (ue ? ' is-run-top' : i === 0 ? ' is-run-bottom' : ' is-run-mid') : ''));
+        const yr = el('span', 'kt-year', String(h.year));
+        if (h.term) yr.appendChild(el('small', null, h.term));
+        li.appendChild(yr);
+        const nm = el('span', 'kt-name');
+        if (iro) { nm.style.setProperty('--kt-bg', iro[0]); if (iro[1]) nm.style.setProperty('--kt-fg', iro[1]); }
+        nm.appendChild(el('b', null, run.name));
+        if (n > 1 && ue) nm.appendChild(el('span', 'kt-renpa', n + '連覇'));
+        li.appendChild(nm);
         items.push(li);
       });
     }
@@ -588,6 +602,9 @@
       b.addEventListener('click', () => showNenpyo(t.key));
       tabs.appendChild(b);
     }
+    // タブは横にすべらせて選ぶので、えらんだタブがまん中に見えるようにする
+    const on = tabs.querySelector('.is-on');
+    if (on) tabs.scrollLeft = on.offsetLeft - (tabs.clientWidth - on.offsetWidth) / 2;
     $('nenpyo-pick').hidden = true;
     if (nenpyoTab === 'all') buildNenpyoAll();
     else buildNenpyo(nenpyoTab);
