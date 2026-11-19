@@ -23,64 +23,46 @@
 <style>
 /* ---------------- 級の記録 ---------------- */
 
-/* 学年ごとの箱。上から下へ、古い順 (2年生 → 3年生 → …、17級 → 16級 → …)。
-   見出しの「17級 → 13級」と、中のならびの向きを同じにしてある */
-.g-box {
-  background: var(--kami-2); border: 1px solid var(--sen); border-top: 4px solid var(--g);
-  border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; margin-top: 12px;
+/* 学年ごとの道のり (横にすべらせる大きいグラフ) */
+.michi-wrap {
+  background: var(--kami-2); border: 1px solid var(--sen); border-radius: var(--radius);
+  box-shadow: var(--shadow); overflow: hidden; scroll-margin-top: calc(env(safe-area-inset-top) + 12px);
 }
-.g-head {
-  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-  padding: 10px 14px; background: var(--g-usu);
+.michi-scroll { overflow-x: auto; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; }
+.michi { display: block; }
+.michi-box { position: relative; }
+.michi-axis {
+  position: absolute; left: 0; top: 0; pointer-events: none;
+  background: linear-gradient(90deg, rgba(255, 255, 255, .95) 70%, rgba(255, 255, 255, 0));
 }
-.g-nen {
-  font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif;
-  font-size: 1.3rem; color: var(--g); letter-spacing: .06em; line-height: 1.2;
+.michi-axis .mi-ax { font-size: 9.5px; font-weight: 500; fill: var(--usu); }
+.michi .mi-grid { stroke: rgba(0, 0, 0, .05); stroke-width: 1; }
+.michi .mi-sakai { stroke-width: 1; stroke-dasharray: 3 4; opacity: .5; }
+.michi .mi-nen { font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif; font-size: 19px; font-weight: 700; }
+.michi .mi-sum { font-size: 11px; font-weight: 500; fill: var(--sumi-2); }
+.michi .mi-line { fill: none; stroke-width: 3; stroke-linecap: round; }
+.michi .mi-line.is-ima { stroke-dasharray: 5 6; }
+.michi .mi-dot { fill: var(--kami-2); stroke: var(--gi, var(--shu)); stroke-width: 3.5; }
+.michi .is-ima .mi-dot { fill: var(--gi, var(--shu)); }
+.michi .mi-rank { font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif; font-size: 16px; font-weight: 700; fill: var(--sumi); }
+.michi .is-ima .mi-rank { fill: var(--gi, var(--shu)); }
+.michi .mi-date { font-size: 12px; font-weight: 700; fill: var(--sumi-2); }
+.michi .mi-year { font-size: 9px; font-weight: 500; fill: var(--usu); }
+.michi .mi-memo { font-size: 10.5px; font-weight: 500; fill: var(--sumi-2); }
+.michi .mi-stay { font-size: 12px; font-weight: 700; fill: var(--usu); }
+.michi .is-ima .mi-stay { fill: var(--gi, var(--shu)); }
+.michi .mi-pill text { font-size: 10px; font-weight: 700; }
+.michi .mi-pill.is-start rect { fill: var(--gi, var(--shu)); } .michi .mi-pill.is-start text { fill: #fff; }
+.michi .mi-pill.is-ima rect { fill: var(--gi, var(--shu)); } .michi .mi-pill.is-ima text { fill: #fff; }
+.michi .mi-pill.is-fast rect, .michi .mi-pill.is-hayai rect { fill: #fff; stroke: #ecc5bf; } .michi .mi-pill.is-fast text, .michi .mi-pill.is-hayai text { fill: var(--shu); }
+.michi .mi-pill.is-nagai rect { fill: #fff; stroke: #bdd0e4; } .michi .mi-pill.is-nagai text { fill: var(--ai); }
+.michi-nav { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-top: 1px solid var(--sen); }
+.michi-btn {
+  font: inherit; font-size: .74rem; color: var(--sumi-2); cursor: pointer; padding: 5px 12px;
+  border: 1px solid var(--sen-2); border-radius: 999px; background: var(--kami);
 }
-.g-nendo { font-size: .7rem; font-weight: 500; color: var(--usu); }
-.g-ima { font-size: .68rem; color: #fff; background: var(--g); border-radius: 999px; padding: 2px 9px; }
-.g-sum { margin-left: auto; text-align: right; font-size: .78rem; color: var(--sumi-2); line-height: 1.5; }
-.g-sum small { display: block; font-size: .68rem; font-weight: 500; color: var(--usu); }
-.g-1 { --g: #b4506f; --g-usu: #fbeef2; --g-sen: #ecc4d1; }
-.g-2 { --g: #b23a2e; --g-usu: #f7ece7; --g-sen: #ecc5bf; }
-.g-3 { --g: #2f5d8a; --g-usu: #e9eef5; --g-sen: #bdd0e4; }
-.g-4 { --g: #3f7a3a; --g-usu: #eaf2e4; --g-sen: #c3dcc0; }
-.g-5 { --g: #5b4370; --g-usu: #efe9f5; --g-sen: #d2c5e0; }
-.g-6 { --g: #8a6a10; --g-usu: #fbf3dc; --g-sen: #e6d5a0; }
+.michi-hint { flex: 1; text-align: center; font-size: .66rem; font-weight: 500; color: var(--usu); }
 
-/* 道。● が昇級した日、● と ● のあいだの線が「その級にいた日数」(長いほど長くいた) */
-.tl { list-style: none; margin: 0; padding: 14px 14px 12px; }
-.tl li { display: grid; grid-template-columns: 46px 22px 1fr; column-gap: 8px; }
-.tl-rail { position: relative; }
-.tl-rail::before {                       /* 道の線 */
-  content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 4px; margin-left: -2px;
-  background: var(--g-sen);
-}
-.tl-node:first-child .tl-rail::before { top: 14px; border-radius: 2px 2px 0 0; }
-.tl-node .tl-rail::after {               /* 昇級の ● */
-  content: ""; position: absolute; left: 50%; top: 5px; width: 18px; height: 18px; margin-left: -9px;
-  border-radius: 50%; background: var(--kami-2); border: 4px solid var(--g); box-sizing: border-box;
-}
-.tl-date { text-align: right; line-height: 1.2; padding-top: 4px; }
-.tl-date b { display: block; font-family: "M PLUS Rounded 1c", system-ui, sans-serif; font-size: .92rem; color: var(--sumi-2); }
-.tl-date span { font-size: .62rem; font-weight: 500; color: var(--usu); }
-.tl-rank { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-height: 28px; }
-.tl-rank .n-name { font-size: 1.2rem; line-height: 1.3; }
-.tl-stay { display: flex; align-items: center; font-size: .74rem; font-weight: 500; color: var(--usu); }
-.tl-stay b { font-weight: 700; color: var(--sumi-2); margin-right: 3px; }
-/* いまの級。線は点線で、まだ先につづく */
-.tl-seg.is-ima .tl-rail::before {
-  background: repeating-linear-gradient(var(--g) 0 5px, transparent 5px 10px);
-}
-.tl-seg.is-ima .tl-stay, .tl-seg.is-ima .tl-stay b { color: var(--g); font-weight: 700; }
-.tl-node.is-ima .tl-rail::after { background: var(--g); }
-.tl-node.is-ima .n-name { color: var(--g); }
-.k-fast { background: var(--shu-usu); color: var(--shu); }
-.tl-stay { gap: 0; flex-wrap: wrap; }
-.tl-stay b { margin-left: 4px; }
-.tl-mark { margin-left: 8px; font-size: .64rem; font-weight: 700; padding: 1px 8px; border-radius: 999px; }
-.tl-mark.is-hayai { color: var(--shu); background: var(--shu-usu); }
-.tl-mark.is-nagai { color: var(--ai); background: #e6edf5; }
 /* つぎの級までのめやす */
 .k-goal { margin: 12px auto 0; max-width: 300px; }
 .k-goal-t { font-size: .82rem; color: var(--sumi-2); }
@@ -89,8 +71,6 @@
 .k-goal-bar i { display: block; height: 100%; border-radius: 4px; background: var(--shu); opacity: .7; }
 .k-goal-n { font-size: .68rem; font-weight: 500; color: var(--usu); margin-top: 4px; }
 .k-chart .ax-g { font-size: 10px; font-weight: 700; }
-.tl-note { font-size: .74rem; font-weight: 500; color: var(--usu); line-height: 1.7; text-align: center; }
-.tl-note i { font-style: normal; color: var(--sumi-2); font-weight: 700; }
 .k-jump {
   display: inline-block; margin-top: 8px; font-size: .74rem; color: var(--shu); text-decoration: none;
   border: 1px solid var(--sen-2); border-radius: 999px; padding: 4px 14px; background: var(--kami);
@@ -127,7 +107,7 @@
 .k-chart { display: block; width: 100%; height: auto; overflow: visible; }
 .k-chart .ax { font-size: 10px; fill: var(--usu); font-weight: 500; }
 .k-chart .grid { stroke: var(--sen); stroke-width: 1; }
-.k-chart .ln { fill: none; stroke-width: 2; stroke-linejoin: round; }
+.k-chart .ln { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
 .k-chart .dot { stroke: var(--kami-2); stroke-width: 2; }
 .k-chart .hit { fill: transparent; cursor: pointer; }
 .k-tip {
@@ -241,6 +221,26 @@ const KIROKU = {
   // 線の色。場所ごとに決まった順でわりあてる (ふえても前の色は変わらない)
   const IRO = ['#b23a2e', '#2f5d8a', '#2d6a32', '#7a5510'];
 
+  // 学年の色 [うすい地, こい線]。学年ごとの帯と、グラフの線・丸を同じ系統の色にする
+  const GAKU_IRO = { 1: ['#fbeef2', '#b4506f'], 2: ['#f7ece7', '#b23a2e'], 3: ['#e9eef5', '#2f5d8a'],
+                     4: ['#eaf2e4', '#3f7a3a'], 5: ['#efe9f5', '#5b4370'], 6: ['#fbf3dc', '#8a6a10'] };
+  function gakuNen(nd) { return KIROKU.gakunen ? KIROKU.gakunen.nen + (nd - KIROKU.gakunen.nendo) : 0; }
+  function gakuIro(t) { return GAKU_IRO[gakuNen(nendoOf(new Date(t)))] || ['#f2ece0', '#b23a2e']; }
+  /** t0 から t1 のあいだにある、学年の切りかわり (4月1日) */
+  function sakaime(t0, t1) {
+    const out = [];
+    for (let nd = nendoOf(new Date(t0)) + 1; nd <= nendoOf(new Date(t1)); nd++) out.push(new Date(nd, 3, 1).getTime());
+    return out;
+  }
+  /** t0 から t1 までの横線を、学年の切りかわりで分けて、それぞれの学年の色で引く */
+  function yokoSen(svg, mk, xOf, yy, t0, t1, cls) {
+    const cuts = [t0].concat(sakaime(t0, t1).filter((t) => t > t0 && t < t1), [t1]);
+    for (let i = 0; i + 1 < cuts.length; i++) {
+      svg.appendChild(mk('line', { x1: xOf(cuts[i]), x2: xOf(cuts[i + 1]), y1: yy, y2: yy,
+        class: cls, stroke: gakuIro(cuts[i])[1] }));
+    }
+  }
+
   function render() {
     const body = $('kyu-body');
     body.innerHTML = '';
@@ -305,6 +305,15 @@ const KIROKU = {
     }
     const jump = el('a', 'k-jump', 'いまのところへ ↓');
     jump.href = '#ima';
+    // 道のりへ飛んで、横もいまの級 (右はし) に合わせる
+    jump.addEventListener('click', (e) => {
+      e.preventDefault();
+      const w = document.getElementById('ima');
+      if (!w) return;
+      w.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const sc = w.querySelector('.michi-scroll');
+      if (sc) sc.scrollTo({ left: sc.scrollWidth, behavior: 'smooth' });
+    });
     card.appendChild(jump);
     body.appendChild(card);
 
@@ -336,11 +345,7 @@ const KIROKU = {
     body.appendChild(chart(rows, places));
 
     body.appendChild(el('div', 'zukan-fam', '学年ごとの道のり'));
-    const note = el('p', 'tl-note');
-    note.innerHTML = '上から下へ、古い順だよ。<i>○</i> が昇級した日で、'
-      + '<i>○</i> と <i>○</i> のあいだの線が長いほど、その級に長くいたよ';
-    body.appendChild(note);
-    body.appendChild(nenpyo(rows, places));
+    body.appendChild(nenpyo(rows));
   }
 
   /** 横が日付、たてが級の階段グラフ。上ほど強い。 */
@@ -361,8 +366,7 @@ const KIROKU = {
       'aria-label': '級のうつりかわりのグラフ。くわしくは下の年表を見てね' });
 
     // 学年ごとに、下の「学年ごとの道のり」と同じ色の帯を敷く
-    const GIRO = { 1: ['#fbeef2', '#b4506f'], 2: ['#f7ece7', '#b23a2e'], 3: ['#e9eef5', '#2f5d8a'],
-                   4: ['#eaf2e4', '#3f7a3a'], 5: ['#efe9f5', '#5b4370'], 6: ['#fbf3dc', '#8a6a10'] };
+    const GIRO = GAKU_IRO;
     if (KIROKU.gakunen) {
       for (let nd = nendoOf(new Date(t0)); nd <= nendoOf(new Date(t1)); nd++) {
         const a = Math.max(t0, new Date(nd, 3, 1).getTime());
@@ -400,19 +404,29 @@ const KIROKU = {
     const tip = el('div', 'k-tip');
     tip.hidden = true;
 
+    // 場所が 1 つなら、線と丸は学年の色。2 つ以上なら、場所ごとの色 (見分けるため)
+    const gakuDe = places.length === 1 && !!KIROKU.gakunen;
     places.forEach((p, i) => {
       const pts = rows.filter((r) => r.where === p);
       const color = IRO[i % IRO.length];
-      let d = '';
-      pts.forEach((r, j) => {
-        d += (j ? ' H' + x(r.d.getTime()) + ' V' + y(r.v) : 'M' + x(r.d.getTime()) + ' ' + y(r.v));
-      });
-      // いまの級を今日までのばす
-      d += ' H' + x(t1);
-      svg.appendChild(s('path', { d: d, class: 'ln', stroke: color }));
+      if (gakuDe) {
+        pts.forEach((r, j) => {
+          const t = r.d.getTime();
+          if (j) svg.appendChild(s('line', { x1: x(t), x2: x(t), y1: y(pts[j - 1].v), y2: y(r.v), class: 'ln', stroke: gakuIro(t)[1] }));
+          yokoSen(svg, s, x, y(r.v), t, j + 1 < pts.length ? pts[j + 1].d.getTime() : t1, 'ln');
+        });
+      } else {
+        let d = '';
+        pts.forEach((r, j) => {
+          d += (j ? ' H' + x(r.d.getTime()) + ' V' + y(r.v) : 'M' + x(r.d.getTime()) + ' ' + y(r.v));
+        });
+        // いまの級を今日までのばす
+        d += ' H' + x(t1);
+        svg.appendChild(s('path', { d: d, class: 'ln', stroke: color }));
+      }
       for (const r of pts) {
         const cx = x(r.d.getTime()), cy = y(r.v);
-        svg.appendChild(s('circle', { cx: cx, cy: cy, r: 4.5, class: 'dot', fill: color }));
+        svg.appendChild(s('circle', { cx: cx, cy: cy, r: 4.5, class: 'dot', fill: gakuDe ? gakuIro(r.d.getTime())[1] : color }));
         const hit = s('circle', { cx: cx, cy: cy, r: 14, class: 'hit', tabindex: 0 });
         const show = () => {
           tip.hidden = false;
@@ -465,95 +479,160 @@ const KIROKU = {
   }
 
   /**
-   * 学年ごとの道のり。上から下へ、古い順 (読む向きと、時間の進む向きを同じにする)。
-   * ○ が昇級した日。○ の下の線が、その級にいた日数で、長くいたほど線も長い。
+   * 学年ごとの道のり。「あがってきた道」を大きくして、横にすべらせて見る。
+   * 左が古く、右が新しい。● が昇級した日、横の線がその級にいた日数。
+   * 横の長さは日数に合わせるが、短い級は字が重ならないよう、いちばん短くても MIN_W にする。
+   * うしろに学年ごとの色の帯を敷き、帯の上に学年の名前とその学年の「7級 → 2級・5回」を出す。
    */
-  function nenpyo(rows, places) {
-    const wrap = el('div', 'g-wrap');
-    const nendos = [];
-    for (const r of rows) { r.nendo = nendoOf(r.d); if (nendos.indexOf(r.nendo) < 0) nendos.push(r.nendo); }
-    const imaNendo = nendoOf(new Date());
-    const saigo = rows[rows.length - 1];
-    // いちばん短かった級・長かった級 (上の数字の札と同じ)。いまの級はまだ途中なので入れない
+  // (場所 where がちがう記録が混ざると、1 本の道にならべてしまう。いまの記録は場所が 1 つだけ)
+  function nenpyo(rows) {
+    const MIN_W = 136;          // 1 つの級の横の長さの、いちばん短いとき (名前と札が入る長さ)
+    const PX_DAY = 1.6;         // 1 日ぶんの横の長さ
+    const ROW_H = 10;           // 1 級ぶんの高さ (字は ● の右に出すので、低くしても重ならない)
+    const AXIS = 40;            // 左の目盛り (すべらせても動かない) のはば
+    const PAD_L = AXIS + 14, PAD_R = 70, TOP = 78, BOTTOM = 50;
+    const NS = 'http://www.w3.org/2000/svg';
+    const s = (tag, attrs, text) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (text !== undefined) e.textContent = text; return e; };
+
+    const step = (v) => (v > 0 ? v - 1 : v);          // 1級 と 初段 をとなりにする
+    const lo = Math.min.apply(null, rows.map((r) => step(r.v)));
+    const hi = Math.max.apply(null, rows.map((r) => step(r.v)));
+    const H = TOP + (hi - lo) * ROW_H + BOTTOM;
+    const y = (r) => TOP + (hi - step(r.v)) * ROW_H;
+
+    // それぞれの級の左はし (昇級した日) の x
+    const xs = [];
+    let x = PAD_L;
+    for (const r of rows) { xs.push(x); x += Math.max(MIN_W, r.stay * PX_DAY); }
+    const W = x + PAD_R;
+    // ある日が、横のどこにあたるか (その日をふくむ級の中で、日数の割合で決める)
+    function xOfDate(t) {
+      for (let i = rows.length - 1; i >= 0; i--) {
+        if (t >= rows[i].d.getTime()) {
+          const w = Math.max(MIN_W, rows[i].stay * PX_DAY);
+          const f = rows[i].stay ? Math.min(1, (t - rows[i].d.getTime()) / DAY / rows[i].stay) : 0;
+          return xs[i] + w * f;
+        }
+      }
+      return PAD_L;
+    }
+
+    const svg = s('svg', { width: W, height: H, viewBox: '0 0 ' + W + ' ' + H, class: 'michi', role: 'img',
+      'aria-label': '級のうつりかわり。左が古く、右が新しい。横にすべらせて見てね' });
+
+    // 学年の帯
+    const GIRO = GAKU_IRO;
+    const nd0 = nendoOf(rows[0].d), nd1 = nendoOf(new Date());
+    for (let nd = nd0; nd <= nd1; nd++) {
+      const these = rows.filter((r) => nendoOf(r.d) === nd);
+      const a = nd === nd0 ? 0 : xOfDate(new Date(nd, 3, 1).getTime());
+      const b = nd === nd1 ? W : xOfDate(new Date(nd + 1, 3, 1).getTime());
+      const g = KIROKU.gakunen ? KIROKU.gakunen.nen + (nd - KIROKU.gakunen.nendo) : 0;
+      const iro = GIRO[g] || ['#f2ece0', '#8a8072'];
+      svg.appendChild(s('rect', { x: a, y: 0, width: Math.max(0, b - a), height: H, fill: iro[0] }));
+      svg.appendChild(s('line', { x1: a, x2: a, y1: 0, y2: H, class: 'mi-sakai', stroke: iro[1] }));
+      const lx = Math.max(a, AXIS) + 12;     // 左の目盛りの下にもぐらないように
+      svg.appendChild(s('text', { x: lx, y: 26, class: 'mi-nen', fill: iro[1] }, nenOf(nd)));
+      const before = rows.filter((r) => nendoOf(r.d) < nd);
+      const start = before.length ? before[before.length - 1].rank : (these[0] ? these[0].rank : '');
+      const end = these.length ? these[these.length - 1].rank : start;
+      const n = these.filter((r) => r.days !== null).length;
+      svg.appendChild(s('text', { x: lx, y: 44, class: 'mi-sum' },
+        nd + '年度　' + (start === end ? end : start + ' → ' + end) + (n ? '・' + n + '回 昇級' : '')));
+    }
+
+    // うすい横線 (目盛り)。3 級ごと
+    for (let k = lo; k <= hi; k++) {
+      if ((hi - k) % 3) continue;
+      const yy = TOP + (hi - k) * ROW_H;
+      svg.appendChild(s('line', { x1: 0, x2: W, y1: yy, y2: yy, class: 'mi-grid' }));
+    }
+
+    // いちばん短かった級・長かった級 (上の札と同じ)。いまの級はまだ途中なので入れない
     const sotsu = rows.filter((r) => !r.ima);
     const mijikai = sotsu.length ? Math.min.apply(null, sotsu.map((r) => r.stay)) : null;
     const nagai = sotsu.length ? Math.max.apply(null, sotsu.map((r) => r.stay)) : null;
+    const BAI = { 2: 'ダブル昇級', 3: 'トリプル昇級' };
 
-    for (const nd of nendos) {
-      const these = rows.filter((r) => r.nendo === nd);
-      const before = rows.filter((r) => r.nendo < nd);
-      const g = KIROKU.gakunen ? KIROKU.gakunen.nen + (nd - KIROKU.gakunen.nendo) : 0;
-      const box = el('section', 'g-box g-' + (g >= 1 && g <= 6 ? g : 2));
+    // 道の線 (階段)。線も丸も、その日の学年の色。いまの級だけ点線
+    rows.forEach((r, i) => {
+      const t = r.d.getTime();
+      if (i) svg.appendChild(s('line', { x1: xs[i], x2: xs[i], y1: y(rows[i - 1]), y2: y(r), class: 'mi-line', stroke: gakuIro(t)[1] }));
+      if (!r.ima) yokoSen(svg, s, xOfDate, y(r), t, rows[i + 1].d.getTime(), 'mi-line');
+    });
+    const last = rows[rows.length - 1];
+    const lx = xs[rows.length - 1];
+    svg.appendChild(s('path', { d: 'M' + lx + ' ' + y(last) + ' H' + (lx + Math.max(MIN_W, last.stay * PX_DAY) + 30),
+      class: 'mi-line is-ima', stroke: gakuIro(last.d.getTime())[1] }));
 
-      const head = el('div', 'g-head');
-      head.appendChild(el('span', 'g-nen', nenOf(nd)));
-      head.appendChild(el('span', 'g-nendo', nd + '年度'));
-      if (nd === imaNendo) head.appendChild(el('span', 'g-ima', 'いま'));
-      // その学年のはじめの級 → おわり (いま) の級
-      const start = before.length ? before[before.length - 1].rank : these[0].rank;
-      const end = these[these.length - 1].rank;
-      const n = these.filter((r) => r.days !== null).length;
-      const sum = el('span', 'g-sum', start === end ? end : start + ' → ' + end);
-      sum.appendChild(el('small', null, n ? n + '回 昇級' : 'はじめての級'));
-      head.appendChild(sum);
-      box.appendChild(head);
+    rows.forEach((r, i) => {
+      const x0 = xs[i], yy = y(r);
+      const w = Math.max(MIN_W, r.stay * PX_DAY);
+      const g = s('g', { class: 'mi-step' + (r.ima ? ' is-ima' : '') });
+      g.style.setProperty('--gi', gakuIro(r.d.getTime())[1]);   // この級の学年の色
+      // 級の名前 (線の上)
+      const name = s('text', { x: x0 + 10, y: yy - 9, class: 'mi-rank' }, r.rank);
+      g.appendChild(name);
+      // 札: スタート / ダブル昇級 / スピード昇級 / いま
+      const kaime = rows.filter((q, j) => j <= i && q.where === r.where
+        && q.d.getFullYear() === r.d.getFullYear() && q.d.getMonth() === r.d.getMonth()).length;
+      let fuda = null;
+      if (r.days === null) fuda = ['スタート', 'is-start'];
+      else if (kaime >= 2) fuda = [BAI[kaime] || kaime + '回目の昇級', 'is-fast'];
+      else if (r.days <= 14) fuda = ['スピード昇級', 'is-fast'];
+      if (r.ima) fuda = ['いま', 'is-ima'];
+      if (fuda) g.appendChild(pill(x0 + 10 + r.rank.length * 15 + 8, yy - 23, fuda[0], fuda[1]));
+      // 日付 (線の下、左)
+      g.appendChild(s('text', { x: x0 + 8, y: yy + 18, class: 'mi-date' },
+        (r.d.getMonth() + 1) + '/' + (r.date.split('-').length > 2 ? r.d.getDate() : '')));
+      g.appendChild(s('text', { x: x0 + 8, y: yy + 31, class: 'mi-year' }, String(r.d.getFullYear())));
+      if (r.memo) g.appendChild(s('text', { x: x0 + 8, y: yy + 46, class: 'mi-memo' }, r.memo));   // ひとこと
+      // その級にいた日数 (線の下、右)
+      const t = s('text', { x: x0 + w - 8, y: yy + 18, 'text-anchor': 'end', class: 'mi-stay' }, r.stay + '日');
+      g.appendChild(t);
+      if (!r.ima && r.stay === mijikai) g.appendChild(pill(x0 + w - 8, yy + 24, 'いちばん短い', 'is-hayai', true));
+      if (!r.ima && r.stay === nagai) g.appendChild(pill(x0 + w - 8, yy + 24, 'いちばん長い', 'is-nagai', true));
+      // 昇級の ●
+      g.appendChild(s('circle', { cx: x0, cy: yy, r: 7, class: 'mi-dot' }));
+      svg.appendChild(g);
+    });
 
-      const ol = el('ol', 'tl');
-      for (const r of these) {
-        ol.appendChild(node(r, rows.indexOf(r)));
-        ol.appendChild(seg(r));
-      }
-      box.appendChild(ol);
-      wrap.appendChild(box);
+    function pill(px, py, text, cls, right) {
+      const wpx = text.length * 10.5 + 14;
+      const g = s('g', { class: 'mi-pill ' + cls });
+      const x0 = right ? px - wpx : px;
+      g.appendChild(s('rect', { x: x0, y: py, width: wpx, height: 16, rx: 8 }));
+      g.appendChild(s('text', { x: x0 + wpx / 2, y: py + 11.5, 'text-anchor': 'middle' }, text));
+      return g;
     }
+
+    const wrap = el('div', 'michi-wrap');
+    wrap.id = 'ima';
+    const box = el('div', 'michi-box');
+    const sc = el('div', 'michi-scroll');
+    sc.appendChild(svg);
+    box.appendChild(sc);
+    // 左の目盛り。すべらせても動かないよう、上に重ねる
+    const ax = s('svg', { width: AXIS, height: H, class: 'michi-axis', 'aria-hidden': 'true' });
+    const rankOf = (k) => { const v = k >= 0 ? k + 1 : k; return rankName(v); };
+    for (let k = lo; k <= hi; k++) {
+      if ((hi - k) % 3) continue;
+      ax.appendChild(s('text', { x: AXIS - 6, y: TOP + (hi - k) * ROW_H + 3.5, 'text-anchor': 'end', class: 'mi-ax' }, rankOf(k)));
+    }
+    box.appendChild(ax);
+    wrap.appendChild(box);
+    // はじめ・いま へ飛ぶボタン
+    const nav = el('div', 'michi-nav');
+    const b1 = el('button', 'michi-btn', '◀ はじめ');
+    const b2 = el('button', 'michi-btn', 'いま ▶');
+    b1.type = b2.type = 'button';
+    b1.addEventListener('click', () => sc.scrollTo({ left: 0, behavior: 'smooth' }));
+    b2.addEventListener('click', () => sc.scrollTo({ left: sc.scrollWidth, behavior: 'smooth' }));
+    nav.append(b1, el('span', 'michi-hint', '← 横にすべらせて見てね →'), b2);
+    wrap.appendChild(nav);
+    // さいしょは、いまの級が見えるところ (右はし) から
+    requestAnimationFrame(() => { sc.scrollLeft = sc.scrollWidth; });
     return wrap;
-
-    /** 昇級した日の行: 日付 / ○ / 級と札 */
-    function node(r, i) {
-      const li = el('li', 'tl-node' + (r === saigo ? ' is-ima' : ''));
-      if (r === saigo) li.id = 'ima';
-      const dt = el('span', 'tl-date');
-      dt.appendChild(el('b', null, (r.d.getMonth() + 1) + '/' + (r.date.split('-').length > 2 ? r.d.getDate() : '')));
-      dt.appendChild(el('span', null, String(r.d.getFullYear())));   // 年はおまけ
-      li.appendChild(dt);
-      li.appendChild(el('span', 'tl-rail'));
-      const b = el('span', 'tl-body');
-      const main = el('span', 'tl-rank');
-      main.appendChild(el('span', 'n-name', r.rank));
-      // 同じ月に2回目 (3回目) の昇級なら「ダブル昇級」(「トリプル昇級」)。
-      // それ以外で前の級から14日以内なら「スピード昇級」
-      const kaime = rows.filter((x, j) => j <= i && x.where === r.where && x.days !== null
-        && x.d.getFullYear() === r.d.getFullYear() && x.d.getMonth() === r.d.getMonth()).length
-        + (rows.some((x, j) => j < i && x.where === r.where && x.days === null
-          && x.d.getFullYear() === r.d.getFullYear() && x.d.getMonth() === r.d.getMonth()) ? 1 : 0);
-      const BAI = { 2: 'ダブル', 3: 'トリプル' };
-      if (r.days !== null && kaime >= 2) main.appendChild(el('span', 'n-renpa k-fast', (BAI[kaime] || kaime + '回目の') + '昇級'));
-      else if (r.days !== null && r.days <= 14) main.appendChild(el('span', 'n-renpa k-fast', 'スピード昇級'));
-      if (r.days === null) main.appendChild(el('span', 'n-renpa', 'スタート'));
-      b.appendChild(main);
-      if (r.where && places.length > 1) b.appendChild(el('span', 'k-where', r.where));
-      if (r.memo) b.appendChild(el('span', 'k-memo', r.memo));
-      li.appendChild(b);
-      return li;
-    }
-
-    /** ○ と ○ のあいだ: その級にいた日数。線の長さは日数に合わせる (長すぎないよう 150 日で止める) */
-    function seg(r) {
-      const li = el('li', 'tl-seg' + (r.ima ? ' is-ima' : ''));
-      li.style.minHeight = Math.round(24 + Math.min(r.stay, 150) * 0.45) + 'px';
-      li.appendChild(el('span'));
-      li.appendChild(el('span', 'tl-rail'));
-      const t = el('span', 'tl-stay');
-      // だれの日数かが分かるように「17級で 42日」と書く
-      t.appendChild(document.createTextNode(r.rank + 'で '));
-      t.appendChild(el('b', null, r.stay + '日'));
-      t.appendChild(document.createTextNode(r.ima ? '（いま在籍中）' : ''));
-      if (!r.ima && r.stay === mijikai) t.appendChild(el('span', 'tl-mark is-hayai', 'いちばん短い'));
-      if (!r.ima && r.stay === nagai) t.appendChild(el('span', 'tl-mark is-nagai', 'いちばん長い'));
-      t.title = r.rank + 'にいた日数 ' + r.stay + '日';
-      li.appendChild(t);
-      return li;
-    }
   }
 
 
