@@ -23,6 +23,29 @@
 <style>
 /* ---------------- 級の記録 ---------------- */
 
+/* あがってきた道 (ぜんたい図。すべらせずに 1 枚で見る) */
+.k-chart-wrap {
+  background: var(--kami-2); border: 1px solid var(--sen); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 8px 6px 4px; position: relative;
+}
+.k-chart { display: block; width: 100%; height: auto; overflow: visible; }
+.k-chart .ax { font-size: 10px; fill: var(--usu); font-weight: 600; }
+.k-chart .ax.is-ima { font-size: 11.5px; font-weight: 800; }
+.k-chart .ax-g { font-size: 11px; font-weight: 800; }
+.k-chart .grid { stroke: rgba(0, 0, 0, .07); stroke-width: 1; }
+.k-chart .grid.is-tsugi { stroke-dasharray: 2 4; stroke: rgba(0, 0, 0, .18); }
+.k-chart .ln { fill: none; stroke-width: 2.4; stroke-linecap: round; }
+.k-chart .dot { stroke-width: 2; }
+.k-chart .hit { fill: transparent; cursor: pointer; }
+.k-chart .ima-t { font-size: 11px; font-weight: 800; }
+.k-chart .ev-koma { fill: #e2c47c; stroke: #a8873e; stroke-width: 1; stroke-linejoin: round; }
+.k-chart .ev-moji { font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif; font-size: 8px; font-weight: 700; fill: #4a3410; }
+.k-tip {
+  position: absolute; pointer-events: none; z-index: 2;
+  background: var(--sumi); color: #fff; font-size: .74rem; line-height: 1.6;
+  padding: 5px 9px; border-radius: 8px; white-space: nowrap; transform: translate(-50%, -135%);
+}
+
 /* 学年ごとの歩み (横にすべらせる大きいグラフ) */
 .michi-wrap {
   background: var(--kami-2); border: 1px solid var(--sen); border-radius: var(--radius);
@@ -351,6 +374,9 @@ const KIROKU = {
     }
     body.appendChild(stats);
 
+    body.appendChild(el('div', 'zukan-fam', 'あがってきた道'));
+    body.appendChild(zentai(rows));
+
     body.appendChild(el('div', 'zukan-fam', '学年ごとの歩み'));
     body.appendChild(nenpyo(rows));
 
@@ -371,6 +397,112 @@ const KIROKU = {
       }
       body.appendChild(ul);
     }
+  }
+
+  /**
+   * あがってきた道 (ぜんたい図)。はじめから今日までを、すべらせずに 1 枚で見る。
+   * 横が日付、たてが級。うしろに学年の帯、線と丸は学年の色。大会は金の駒の小さな印。
+   * ● をおすと、日付と級が出る。
+   */
+  function zentai(rows) {
+    const W = 360, H = 300, L = 38, R = 14, T = 26, B = 24;
+    const t0 = rows[0].d.getTime();
+    const t1 = Math.max(rows[rows.length - 1].d.getTime(), Date.now());
+    const step = (v) => (v > 0 ? v - 1 : v);          // 1級 と 初段 をとなりにする
+    const vs = rows.map((r) => step(r.v));
+    const lo = Math.min.apply(null, vs) - 0.5, hi = Math.max.apply(null, vs) + 1.5;   // 上に「つぎの級」の段
+    const x = (t) => L + (W - L - R) * (t1 === t0 ? 0.5 : (t - t0) / (t1 - t0));
+    const y = (v) => T + (H - T - B) * (1 - (step(v) - lo) / (hi - lo));
+    const NS = 'http://www.w3.org/2000/svg';
+    const s = (tag, attrs, text) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (text !== undefined) e.textContent = text; return e; };
+
+    const svg = s('svg', { viewBox: '0 0 ' + W + ' ' + H, class: 'k-chart', role: 'img',
+      'aria-label': 'はじめから今日までの級のうつりかわり' });
+
+    // 学年の帯と名前
+    if (KIROKU.gakunen) {
+      for (let nd = nendoOf(new Date(t0)); nd <= nendoOf(new Date(t1)); nd++) {
+        const a = Math.max(t0, new Date(nd, 3, 1).getTime());
+        const b = Math.min(t1, new Date(nd + 1, 3, 1).getTime());
+        if (b <= a) continue;
+        const g = gakuNen(nd);
+        const iro = GAKU_IRO[g] || ['#f2ece0', '#8a8072'];
+        svg.appendChild(s('rect', { x: x(a), y: 2, width: Math.max(0, x(b) - x(a)), height: H - B - 2, fill: iro[0] }));
+        if (x(b) - x(a) > 26) {
+          svg.appendChild(s('text', { x: (x(a) + x(b)) / 2, y: 16, 'text-anchor': 'middle', class: 'ax-g', fill: iro[1] },
+            g >= 1 && g <= 6 ? g + '年生' : nd + '年度'));
+        }
+      }
+    }
+
+    // たての目盛り (3 級ごと。いまの級とつぎの級は必ず出す)
+    const ima = Math.max.apply(null, vs);
+    const imaIro = gakuIro(rows[rows.length - 1].d.getTime())[1];
+    for (let k = Math.ceil(lo); k <= Math.floor(hi); k++) {
+      const v = k >= 0 ? k + 1 : k;
+      const sono = k === ima, tsugi = k === ima + 1;
+      if (!sono && !tsugi && (ima - k) % 3) continue;
+      const yy = y(v);
+      svg.appendChild(s('line', { x1: L, x2: W - R, y1: yy, y2: yy, class: 'grid' + (tsugi ? ' is-tsugi' : '') }));
+      const t = s('text', { x: L - 5, y: yy + 3.5, 'text-anchor': 'end', class: 'ax' + (sono ? ' is-ima' : '') }, rankName(v));
+      if (sono || tsugi) t.setAttribute('fill', imaIro);
+      svg.appendChild(t);
+    }
+    // 横の目盛り = 年のはじめ
+    for (let yr = new Date(t0).getFullYear() + 1; yr <= new Date(t1).getFullYear(); yr++) {
+      const t = new Date(yr, 0, 1).getTime();
+      svg.appendChild(s('text', { x: x(t), y: H - 7, 'text-anchor': 'middle', class: 'ax' }, String(yr)));
+    }
+
+    // 階段の線。学年をまたぐ横線は 4月1日で色を変える
+    rows.forEach((r, j) => {
+      const t = r.d.getTime();
+      if (j) svg.appendChild(s('line', { x1: x(t), x2: x(t), y1: y(rows[j - 1].v), y2: y(r.v), class: 'ln', stroke: gakuIro(t)[1] }));
+      yokoSen(svg, s, x, y(r.v), t, j + 1 < rows.length ? rows[j + 1].d.getTime() : t1, 'ln');
+    });
+
+    // 大会・タイトル戦の印 (小さな金の駒)
+    for (const e of (KIROKU.dekigoto || [])) {
+      const t = parseDate(e.date).getTime();
+      let at = null;
+      for (const r of rows) if (r.d.getTime() <= t) at = r;
+      if (!at) continue;
+      const kx = x(t), ky = y(at.v) - 22, kw = 13, kh = 16;
+      svg.appendChild(s('path', { class: 'ev-koma',
+        d: 'M' + kx + ' ' + ky + ' L' + (kx + kw * 0.38) + ' ' + (ky + kh * 0.2) + ' L' + (kx + kw / 2) + ' ' + (ky + kh)
+          + ' L' + (kx - kw / 2) + ' ' + (ky + kh) + ' L' + (kx - kw * 0.38) + ' ' + (ky + kh * 0.2) + ' Z' }));
+      svg.appendChild(s('text', { x: kx, y: ky + kh - 3.5, 'text-anchor': 'middle', class: 'ev-moji' }, e.koma || '王'));
+    }
+
+    const wrap = el('div', 'k-chart-wrap');
+    const tip = el('div', 'k-tip');
+    tip.hidden = true;
+    rows.forEach((r) => {
+      const cx = x(r.d.getTime()), cy = y(r.v);
+      const c = gakuIro(r.d.getTime())[1];
+      svg.appendChild(s('circle', { cx: cx, cy: cy, r: r.ima ? 5 : 3.6, class: 'dot', fill: r.ima ? c : '#fff', stroke: c }));
+      const hit = s('circle', { cx: cx, cy: cy, r: 12, class: 'hit', tabindex: 0 });
+      const show = () => {
+        tip.hidden = false;
+        tip.textContent = r.d.getFullYear() + '年' + dateText(r) + '　' + r.rank;
+        tip.style.left = (cx / W * 100) + '%';
+        tip.style.top = (cy / H * 100) + '%';
+      };
+      hit.addEventListener('pointerenter', show);
+      hit.addEventListener('focus', show);
+      hit.addEventListener('click', show);
+      hit.addEventListener('pointerleave', () => { tip.hidden = true; });
+      hit.addEventListener('blur', () => { tip.hidden = true; });
+      svg.appendChild(hit);
+    });
+    // いまの級の名前
+    const last = rows[rows.length - 1];
+    const lab = s('text', { x: x(last.d.getTime()) - 8, y: y(last.v) - 8, 'text-anchor': 'end', class: 'ima-t', fill: imaIro }, 'いま ' + last.rank);
+    svg.appendChild(lab);
+
+    wrap.appendChild(svg);
+    wrap.appendChild(tip);
+    return wrap;
   }
 
   function rankName(v) {
