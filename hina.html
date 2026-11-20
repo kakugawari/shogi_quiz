@@ -87,7 +87,7 @@
 .michi .mi-ev-moji { font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif; font-size: 14px; font-weight: 700; fill: #4a3410; }
 .michi .mi-ev-pole { stroke: #a8873e; stroke-width: 1.5; stroke-dasharray: 2 3; }
 .michi .mi-ev-name { font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif; font-size: 14px; font-weight: 700; fill: #7a5a18; }
-.michi .mi-ev-kekka { font-size: 10px; font-weight: 700; fill: #8a7550; }
+.michi .mi-ev-kekka { font-size: 12px; font-weight: 800; fill: #8a7550; }
 /* 大会・タイトル戦の一覧 */
 .k-ev { list-style: none; margin: 0; padding: 0; }
 .k-ev li {
@@ -618,7 +618,7 @@ const KIROKU = {
       const mx = xOfDate(t), my = y(at);
       const g = s('g', { class: 'mi-ev' });
       g.appendChild(s('line', { x1: mx, x2: mx, y1: my - 23, y2: my - 19, class: 'mi-ev-pole' }));   // 線の上の日数の字にかからない長さ
-      // 将棋の駒の形 (五角形)。字は駒の左に出す (右には次の級の名前が来るので)
+      // 将棋の駒の形 (五角形)
       const kx = mx, ky = my - 54, kw = 24, kh = 30;
       if (e.yusho) {
         g.appendChild(s('text', { x: kx, y: ky + kh - 2, 'text-anchor': 'middle', class: 'mi-ev-cup' }, '🏆'));
@@ -628,9 +628,10 @@ const KIROKU = {
             + ' L' + (kx - kw / 2) + ' ' + (ky + kh) + ' L' + (kx - kw * 0.38) + ' ' + (ky + kh * 0.2) + ' Z' }));
         g.appendChild(s('text', { x: kx, y: ky + kh - 7, 'text-anchor': 'middle', class: 'mi-ev-moji' }, e.koma || '王'));
       }
-      g.appendChild(s('text', { x: kx - 18, y: ky + 13, 'text-anchor': 'end', class: 'mi-ev-name' }, e.name));
-      g.appendChild(s('text', { x: kx - 18, y: ky + 27, 'text-anchor': 'end', class: 'mi-ev-kekka' },
-        (parseDate(e.date).getMonth() + 1) + '/' + parseDate(e.date).getDate() + ' ' + (e.kekka || '')));
+      // 字は印の上に、大会の名前 → 日付 の順で積む (横に置くと、どの印の日付か分かりにくい)
+      g.appendChild(s('text', { x: kx, y: ky - 21, 'text-anchor': 'middle', class: 'mi-ev-name' }, e.name));
+      g.appendChild(s('text', { x: kx, y: ky - 6, 'text-anchor': 'middle', class: 'mi-ev-kekka' },
+        (parseDate(e.date).getMonth() + 1) + '/' + parseDate(e.date).getDate()));
       svg.appendChild(g);
     }
 
