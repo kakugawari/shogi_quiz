@@ -95,6 +95,7 @@
   background: linear-gradient(90deg, #fbf3dc, var(--kami-2) 60%); border: 1px solid #e6d5a0; border-radius: 12px;
 }
 .k-ev li + li { margin-top: 8px; }
+.k-ev li.is-yusho { background: linear-gradient(90deg, #f6e4a8, #fbf3dc 55%, var(--kami-2)); border-color: #c9a65a; box-shadow: 0 0 0 1px rgba(201, 166, 90, .35), var(--shadow); }
 .k-koma {                     /* 金の駒の形 */
   flex: none; width: 30px; height: 36px; display: grid; place-items: end center; padding-bottom: 6px;
   font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif; font-size: 1rem; color: #4a3410;
@@ -197,6 +198,7 @@ const KIROKU = {
   //   date … 'YYYY-MM-DD'   name … 大会の名前   koma … 駒に書く 1 文字   kekka … ひとこと
   dekigoto: [
     { date: '2026-01-18', name: '香成戦', koma: '香', kekka: 'タイトル戦に出場' },  // 令和8年1月18日 (3年生)
+    { date: '2026-06-13', name: '将棋フェス 中級者', koma: '優', kekka: '優勝 🏆', yusho: true },  // 令和8年6月13日 (4年生)
   ],
   rows: [
     // { date: '2024-04-14', rank: '15級', where: '〇〇将棋教室', memo: 'はじめての級' },
@@ -386,7 +388,7 @@ const KIROKU = {
       body.appendChild(el('div', 'zukan-fam', '大会・タイトル戦'));
       const ul = el('ul', 'k-ev');
       for (const e of ev) {
-        const li = el('li');
+        const li = el('li', e.yusho ? 'is-yusho' : '');
         li.appendChild(el('span', 'k-koma', e.koma || '王'));
         const b = el('span', 'k-ev-b');
         b.appendChild(el('b', null, e.name));
@@ -610,7 +612,7 @@ const KIROKU = {
       if (!at) continue;
       const mx = xOfDate(t), my = y(at);
       const g = s('g', { class: 'mi-ev' });
-      g.appendChild(s('line', { x1: mx, x2: mx, y1: my - 22, y2: my, class: 'mi-ev-pole' }));
+      g.appendChild(s('line', { x1: mx, x2: mx, y1: my - 23, y2: my - 19, class: 'mi-ev-pole' }));   // 線の上の日数の字にかからない長さ
       // 将棋の駒の形 (五角形)。字は駒の左に出す (右には次の級の名前が来るので)
       const kx = mx, ky = my - 54, kw = 24, kh = 30;
       g.appendChild(s('path', { class: 'mi-ev-koma',
@@ -619,7 +621,7 @@ const KIROKU = {
       g.appendChild(s('text', { x: kx, y: ky + kh - 7, 'text-anchor': 'middle', class: 'mi-ev-moji' }, e.koma || '王'));
       g.appendChild(s('text', { x: kx - 18, y: ky + 13, 'text-anchor': 'end', class: 'mi-ev-name' }, e.name));
       g.appendChild(s('text', { x: kx - 18, y: ky + 27, 'text-anchor': 'end', class: 'mi-ev-kekka' },
-        (parseDate(e.date).getMonth() + 1) + '/' + parseDate(e.date).getDate() + ' タイトル戦'));
+        (parseDate(e.date).getMonth() + 1) + '/' + parseDate(e.date).getDate() + ' ' + (e.kekka || '')));
       svg.appendChild(g);
     }
 
