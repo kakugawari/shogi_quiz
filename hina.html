@@ -363,7 +363,7 @@ const KIROKU = {
       stats.appendChild(s);
     };
     // 2 x 2 の札。どれも「数 / 級 / 何の数か」の 3 行
-    stat(span(Math.round((now.d - first.d) / DAY)), 'はじめてから', '', first.rank + ' → ' + now.rank);
+    stat(span(Math.round((now.d - first.d) / DAY)), first.rank + 'から', '', '昇級 ' + ups.length + '回');
     stat(owatta.length ? Math.round(owatta.reduce((a, r) => a + r.stay, 0) / owatta.length) + '日' : '—', '1つの級にいた日数', '', '平均');
     if (owatta.length) {
       // いまの級はまだ途中なので入れない。同じ日数の級が2つ以上あれば、ならべて出す
