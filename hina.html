@@ -95,6 +95,9 @@
   background: linear-gradient(90deg, #fbf3dc, var(--kami-2) 60%); border: 1px solid #e6d5a0; border-radius: 12px;
 }
 .k-ev li + li { margin-top: 8px; }
+.k-hata { flex: none; width: 30px; height: 34px; position: relative; }
+.k-hata::before { content: ""; position: absolute; left: 8px; top: 2px; bottom: 2px; width: 2.5px; border-radius: 2px; background: #8a7550; }
+.k-hata::after { content: ""; position: absolute; left: 10px; top: 3px; border-style: solid; border-width: 8px 0 8px 17px; border-color: transparent transparent transparent var(--hi); }
 .k-cup { flex: none; width: 30px; text-align: center; font-size: 1.7rem; line-height: 1; }
 .k-chart .ev-cup { font-size: 15px; }
 .k-chart .ev-pole { stroke: #a8873e; stroke-width: 1; stroke-dasharray: 1.5 2; }
@@ -201,8 +204,8 @@ const KIROKU = {
   gakunen: { nendo: 2026, nen: 4 },
   // 大会・タイトル戦など、級とは別の大きなできごと。グラフに金の駒の印で出る
   //   date … 'YYYY-MM-DD'   name … 大会の名前   koma … 駒に書く 1 文字   kekka … ひとこと
-  //   jun: 1 / 2 / 3 … 優勝・準優勝・3位。駒のかわりに 🏆 / 🥈 / 🥉 を出す
-  //   (jun の無い大会は金の駒。駒の字は koma、なければ「参」(参加))
+  //   jun: 1 / 2 / 3 … 優勝・準優勝・3位。どれも駒のかわりに 🏆 を出す
+  //   (jun の無い大会は、その学年の色の小旗。koma を書いた大会 (香成戦) だけは金の駒)
   dekigoto: [
     { date: '2024-09-29', name: '赤旗 C級', kekka: '3位', jun: 3 },
     { date: '2024-11-02', name: 'テーブルマーク東海', kekka: '出場' },
@@ -403,7 +406,13 @@ const KIROKU = {
       const ul = el('ul', 'k-ev');
       for (const e of ev) {
         const li = el('li', e.jun === 1 ? 'is-yusho' : e.jun ? 'is-nyusho' : '');
-        li.appendChild(medalOf(e) ? el('span', 'k-cup', medalOf(e)) : el('span', 'k-koma', komaOf(e)));
+        if (medalOf(e)) li.appendChild(el('span', 'k-cup', medalOf(e)));
+        else if (komaOf(e)) li.appendChild(el('span', 'k-koma', komaOf(e)));
+        else {
+          const h = el('span', 'k-hata');
+          h.style.setProperty('--hi', gakuIro(e.d.getTime())[1]);
+          li.appendChild(h);
+        }
         const b = el('span', 'k-ev-b');
         b.appendChild(el('b', null, e.name));
         b.appendChild(el('span', null, e.d.getFullYear() + '年' + (e.d.getMonth() + 1) + '月' + e.d.getDate() + '日　'
@@ -494,6 +503,7 @@ const KIROKU = {
       okiba.push([kx, ky]);
       if (ky + kh + 1 < y(at.v) - 4) svg.appendChild(s('line', { x1: kx, x2: kx, y1: ky + kh + 1, y2: y(at.v) - 4, class: 'ev-pole' }));
       if (medalOf(e)) { svg.appendChild(s('text', { x: kx, y: ky + kh, 'text-anchor': 'middle', class: 'ev-cup' }, medalOf(e))); continue; }
+      if (!komaOf(e)) { svg.appendChild(hata(s, kx, ky, kh, gakuIro(t)[1])); continue; }
       svg.appendChild(s('path', { class: 'ev-koma',
         d: 'M' + kx + ' ' + ky + ' L' + (kx + kw * 0.38) + ' ' + (ky + kh * 0.2) + ' L' + (kx + kw / 2) + ' ' + (ky + kh)
           + ' L' + (kx - kw / 2) + ' ' + (ky + kh) + ' L' + (kx - kw * 0.38) + ' ' + (ky + kh * 0.2) + ' Z' }));
@@ -531,10 +541,17 @@ const KIROKU = {
     return wrap;
   }
 
-  /** 大会の印。入賞は 🏆🥈🥉、それ以外は金の駒 (字は koma、なければ「参」) */
-  const MEDAL = { 1: '🏆', 2: '🥈', 3: '🥉' };
-  function medalOf(e) { return MEDAL[e.jun] || null; }
-  function komaOf(e) { return e.koma || '参'; }
+  /** 大会の印。入賞 (優勝・準優勝・3位) は 🏆、koma のある大会は金の駒、ほかは小旗 */
+  function medalOf(e) { return e.jun >= 1 && e.jun <= 3 ? '🏆' : null; }
+  function komaOf(e) { return e.koma; }
+  /** 小旗 (出場した大会)。x, y は旗のいちばん上、h は高さ。旗の色はその日の学年の色 */
+  function hata(mk, x, y, h, iro) {
+    const g = mk('g', { class: 'hata' });
+    g.appendChild(mk('line', { x1: x - h * 0.28, x2: x - h * 0.28, y1: y, y2: y + h, stroke: '#8a7550', 'stroke-width': Math.max(1, h / 14), 'stroke-linecap': 'round' }));
+    g.appendChild(mk('path', { d: 'M' + (x - h * 0.28) + ' ' + y + ' L' + (x + h * 0.42) + ' ' + (y + h * 0.24) + ' L' + (x - h * 0.28) + ' ' + (y + h * 0.5) + ' Z',
+      fill: iro, stroke: 'rgba(0,0,0,.15)', 'stroke-width': 0.6, 'stroke-linejoin': 'round' }));
+    return g;
+  }
 
   /**
    * 印を重ねないための段。左から順に、前の印とぶつかるなら 1 段上にあげる。
@@ -683,6 +700,8 @@ const KIROKU = {
       if (ky + kh + 2 < my - 19) g.appendChild(s('line', { x1: mx, x2: mx, y1: ky + kh + 2, y2: my - 19, class: 'mi-ev-pole' }));
       if (medalOf(e)) {
         g.appendChild(s('text', { x: kx, y: ky + kh - 2, 'text-anchor': 'middle', class: 'mi-ev-cup' }, medalOf(e)));
+      } else if (!komaOf(e)) {
+        g.appendChild(hata(s, kx, ky + 2, kh - 2, gakuIro(t)[1]));
       } else {
         // 将棋の駒の形 (五角形)
         g.appendChild(s('path', { class: 'mi-ev-koma',
