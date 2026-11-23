@@ -214,6 +214,7 @@ const KIROKU = {
     { date: '2024-12-21', name: '康光さん', kekka: '指導対局', shu: 'shido' },
     { date: '2024-12-28', name: 'いせ冬休み C2級', kekka: '準優勝', jun: 2 },
     { date: '2025-02-08', name: 'ちゅうでんこども将棋大会', kekka: '出場' },
+    { date: '2025-04-20', name: '康光さん', kekka: '指導対局', shu: 'shido' },
     { date: '2025-06-14', name: '詰将棋選手権 初級者', kekka: '優勝', jun: 1 },
     { date: '2025-06-26', name: '倉敷王将戦 低学年', kekka: '出場' },
     { date: '2025-06-29', name: '小牧陣中', kekka: '3位', jun: 3 },
@@ -746,7 +747,8 @@ const KIROKU = {
     const nameW = (e) => Math.max(e.name.length * 11.5, 34) + 8;
     const evX = (e) => Math.max(xOfDate(parseDate(e.date).getTime()), AXIS + nameW(e) / 2 + 4);
     // 階段の字がある所: 級ごとに [左, 右, 上]
-    const kaidan = rows.map((r, i) => [xs[i] - 120, xs[i] + segW(r) + (r.ima ? 40 : 0), y(r) - 32]);
+    // 札 (ダブル昇級など) は級の名前のさらに左に出るので、そのぶん左に広くとる
+    const kaidan = rows.map((r, i) => [xs[i] - 190, xs[i] + segW(r) + (r.ima ? 40 : 0), y(r) - 32]);
     const placedEv = [];
     const kh = 22, kw = 18;   // 大会が多いので、印と字は小さめ (積みあがりすぎないように)
     for (const e of evs) {
@@ -755,7 +757,7 @@ const KIROKU = {
       for (const r of rows) if (r.d.getTime() <= t) at = r;
       const mx = xOfDate(t), my = y(at);
       const tx = evX(e), w = nameW(e);
-      const xa = Math.min(tx - w / 2, mx - 16), xb = Math.max(tx + w / 2, mx + 16);
+      const xa = Math.min(tx - w / 2, mx - 22), xb = Math.max(tx + w / 2, mx + 22);   // 扇子は横に広い
       let base = my - 24;
       for (const k of kaidan) if (k[0] < xb && k[1] > xa) base = Math.min(base, k[2]);
       let ky = base - kh - 2;
