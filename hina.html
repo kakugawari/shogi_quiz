@@ -812,8 +812,9 @@ const KIROKU = {
       const kaime = rows.filter((q, j) => j <= i && q.where === r.where
         && q.d.getFullYear() === r.d.getFullYear() && q.d.getMonth() === r.d.getMonth()).length;
       let fuda = null;
-      if (r.pre) fuda = null;
-      else if (r.days === null) fuda = ['スタート', 'is-start'];
+      // 「スタート」は、いちばん左 (はじめての将棋の「はじめ」、なければ最初の級) にだけ付ける
+      if (i === 0) fuda = ['スタート', 'is-start'];
+      else if (r.days === null) fuda = rows[0].pre ? null : ['スタート', 'is-start'];   // 17級 (前の級がない) には何も付けない
       else if (kaime >= 2) fuda = [BAI[kaime] || kaime + '回目の昇級', 'is-fast'];
       else if (r.days <= 14) fuda = ['スピード昇級', 'is-fast'];
       if (r.ima) fuda = ['いま', 'is-ima'];
