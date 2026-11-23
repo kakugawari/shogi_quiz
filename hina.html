@@ -84,10 +84,10 @@
 .michi .mi-pill.is-fast rect, .michi .mi-pill.is-hayai rect { fill: #fff; stroke: #ecc5bf; } .michi .mi-pill.is-fast text, .michi .mi-pill.is-hayai text { fill: var(--shu); }
 .michi .mi-pill.is-nagai rect { fill: #fff; stroke: #bdd0e4; } .michi .mi-pill.is-nagai text { fill: var(--ai); }
 .michi .mi-ev-koma { fill: url(#kin); stroke: #a8873e; stroke-width: 1.5; stroke-linejoin: round; }
-.michi .mi-ev-moji { font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif; font-size: 14px; font-weight: 700; fill: #4a3410; }
+.michi .mi-ev-moji { font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif; font-size: 11px; font-weight: 700; fill: #4a3410; }
 .michi .mi-ev-pole { stroke: #a8873e; stroke-width: 1.5; stroke-dasharray: 2 3; }
-.michi .mi-ev-name { font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif; font-size: 14px; font-weight: 700; fill: #7a5a18; }
-.michi .mi-ev-kekka { font-size: 12px; font-weight: 800; fill: #8a7550; }
+.michi .mi-ev-name { font-family: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif; font-size: 11.5px; font-weight: 700; fill: #7a5a18; }
+.michi .mi-ev-kekka { font-size: 10px; font-weight: 800; fill: #8a7550; }
 /* 大会・タイトル戦の一覧 */
 .k-ev { list-style: none; margin: 0; padding: 0; }
 .k-ev li {
@@ -98,10 +98,12 @@
 .k-hata { flex: none; width: 30px; height: 34px; position: relative; }
 .k-hata::before { content: ""; position: absolute; left: 8px; top: 2px; bottom: 2px; width: 2.5px; border-radius: 2px; background: #8a7550; }
 .k-hata::after { content: ""; position: absolute; left: 10px; top: 3px; border-style: solid; border-width: 8px 0 8px 17px; border-color: transparent transparent transparent var(--hi); }
+.k-sensu { flex: none; display: block; }
+.k-ev li.is-kyujo { opacity: .7; }
 .k-cup { flex: none; width: 30px; text-align: center; font-size: 1.7rem; line-height: 1; }
 .k-chart .ev-cup { font-size: 15px; }
 .k-chart .ev-pole { stroke: #a8873e; stroke-width: 1; stroke-dasharray: 1.5 2; }
-.michi .mi-ev-cup { font-size: 28px; }
+.michi .mi-ev-cup { font-size: 20px; }
 .k-ev li.is-nyusho { background: linear-gradient(90deg, #f3ecd9, var(--kami-2) 60%); }
 .k-ev li.is-yusho { background: linear-gradient(90deg, #f6e4a8, #fbf3dc 55%, var(--kami-2)); border-color: #c9a65a; box-shadow: 0 0 0 1px rgba(201, 166, 90, .35), var(--shadow); }
 .k-koma {                     /* 金の駒の形 */
@@ -200,16 +202,42 @@ const KIROKU = {
   //   date … 'YYYY-MM-DD'   name … 大会の名前   koma … 駒に書く 1 文字   kekka … ひとこと
   //   jun: 1 / 2 / 3 … 優勝・準優勝・3位。どれも駒のかわりに 🏆 を出す
   //   (jun の無い大会は、その学年の色の小旗。koma を書いた大会 (香成戦) だけは金の駒)
+  //   shu: 'shido' … 指導対局 (金の扇子の印)   'hajime' … はじめての将棋 (🌱)   'kyujo' … 休場 (灰色の小旗)
   dekigoto: [
+    { date: '2023-08-10', name: 'はじめての将棋', kekka: '将棋をはじめた日', shu: 'hajime' },
+    { date: '2024-07-27', name: 'いせ夏休み C2級', kekka: '出場' },
+    { date: '2024-08-03', name: '名古屋城こども王位戦', kekka: '休場', shu: 'kyujo' },
     { date: '2024-09-29', name: '赤旗 C級', kekka: '3位', jun: 3 },
     { date: '2024-11-02', name: 'テーブルマーク東海', kekka: '出場' },
     { date: '2024-11-03', name: '四日市一番街 D級', kekka: '3位', jun: 3 },
     { date: '2024-12-08', name: '将棋連盟100周年大会', kekka: '出場' },
+    { date: '2024-12-21', name: '康光さん', kekka: '指導対局', shu: 'shido' },
     { date: '2024-12-28', name: 'いせ冬休み C2級', kekka: '準優勝', jun: 2 },
     { date: '2025-02-08', name: 'ちゅうでんこども将棋大会', kekka: '出場' },
+    { date: '2025-06-14', name: '詰将棋選手権 初級者', kekka: '優勝', jun: 1 },
+    { date: '2025-06-26', name: '倉敷王将戦 低学年', kekka: '出場' },
+    { date: '2025-06-29', name: '小牧陣中', kekka: '3位', jun: 3 },
+    { date: '2025-07-21', name: '初段免状獲得戦', kekka: '出場' },
+    { date: '2025-08-02', name: '名古屋城こども王位戦', kekka: '出場' },
+    { date: '2025-09-28', name: '豊田自動織機杯', kekka: '出場' },
+    { date: '2025-10-12', name: 'テーブルマーク東海', kekka: '出場' },
+    { date: '2025-10-13', name: '3月のライオン', kekka: '優勝', jun: 1 },
     { date: '2025-11-03', name: '四日市一番街 C級', kekka: '3位', jun: 3 },
+    { date: '2025-11-09', name: 'テーブルマーク大阪', kekka: '出場' },
     { date: '2026-01-18', name: '香成戦', koma: '香', kekka: 'タイトル戦に出場' },  // 令和8年1月18日 (3年生)
+    { date: '2026-02-15', name: '熱田こども将棋', kekka: '出場' },
+    { date: '2026-02-22', name: '支部交流戦', kekka: '準優勝', jun: 2 },
+    { date: '2026-03-08', name: '四日市記念公演', kekka: '出場' },
+    { date: '2026-03-21', name: 'ちゅうでんこども将棋', kekka: '出場' },
+    { date: '2026-04-04', name: '柵木さん', kekka: '指導対局', shu: 'shido' },
+    { date: '2026-06-07', name: '倉敷王将戦 高学年', kekka: '出場' },
     { date: '2026-06-13', name: '将棋フェス 中級者', kekka: '優勝', jun: 1 },  // 令和8年6月13日 (4年生)
+    { date: '2026-06-28', name: '中日新聞将棋 B級', kekka: '出場' },
+    { date: '2026-07-12', name: '初段免状戦', kekka: '出場' },
+    { date: '2026-08-08', name: '名古屋城こども王位戦', kekka: '出場' },
+    { date: '2026-08-10', name: '関西将棋会館道場', kekka: '出場' },
+    { date: '2026-10-31', name: 'テーブルマーク東海', kekka: 'ベスト16' },
+    { date: '2026-11-08', name: 'ペコちゃんこども将棋塾', kekka: '出場' },
   ],
   rows: [
     // { date: '2024-04-14', rank: '15級', where: '〇〇将棋教室', memo: 'はじめての級' },
@@ -387,12 +415,19 @@ const KIROKU = {
       body.appendChild(el('div', 'zukan-fam', '大会・タイトル戦'));
       const ul = el('ul', 'k-ev');
       for (const e of ev) {
-        const li = el('li', e.jun === 1 ? 'is-yusho' : e.jun ? 'is-nyusho' : '');
-        if (medalOf(e)) li.appendChild(el('span', 'k-cup', medalOf(e)));
-        else if (komaOf(e)) li.appendChild(el('span', 'k-koma', komaOf(e)));
-        else {
+        const k = shuOf(e);
+        const li = el('li', (e.jun === 1 ? 'is-yusho' : e.jun ? 'is-nyusho' : '') + (k === 'kyujo' ? ' is-kyujo' : ''));
+        if (k === 'cup' || k === 'hajime') li.appendChild(el('span', 'k-cup', k === 'cup' ? '🏆' : '🌱'));
+        else if (k === 'koma') li.appendChild(el('span', 'k-koma', e.koma));
+        else if (k === 'shido') {
+          const NS = 'http://www.w3.org/2000/svg';
+          const mk = (tag, at) => { const n = document.createElementNS(NS, tag); for (const q in at) n.setAttribute(q, at[q]); return n; };
+          const sv = mk('svg', { viewBox: '0 0 34 30', width: 30, height: 30, class: 'k-sensu' });
+          sv.appendChild(sensu(mk, 17, 2, 26));
+          li.appendChild(sv);
+        } else {
           const h = el('span', 'k-hata');
-          h.style.setProperty('--hi', gakuIro(e.d.getTime())[1]);
+          h.style.setProperty('--hi', k === 'kyujo' ? '#c9c2b4' : gakuIro(e.d.getTime())[1]);
           li.appendChild(h);
         }
         const b = el('span', 'k-ev-b');
@@ -470,26 +505,31 @@ const KIROKU = {
 
     // 大会・タイトル戦の印 (小さな金の駒・メダル)。近い日の印は 1 段ずつ上にずらす
     const evs = (KIROKU.dekigoto || []).filter((e) => rows.some((r) => r.d.getTime() <= parseDate(e.date).getTime()));
-    // ほかの印や、階段の ● にかからない高さまで上げる
+    // ぜんたい図は小さいので、出場 (小旗) は線のすぐ上の小さな点にし、印は 🏆・扇子・駒だけにする。
+    // 印は、ほかの印や階段の ● にかからない高さまで上げる
+    for (const e of evs) {
+      const k = shuOf(e);
+      if (k !== 'hata' && k !== 'kyujo') continue;
+      const t = parseDate(e.date).getTime();
+      let at = null;
+      for (const r of rows) if (r.d.getTime() <= t) at = r;
+      svg.appendChild(s('circle', { cx: x(t), cy: y(at.v) - 5, r: 1.9, fill: k === 'kyujo' ? '#c9c2b4' : gakuIro(t)[1], opacity: .8 }));
+    }
     const tsubu = rows.map((r) => [x(r.d.getTime()), y(r.v)]);
     const okiba = [];
-    for (const e of evs.slice().sort((p, q) => parseDate(p.date) - parseDate(q.date))) {
+    for (const e of evs.slice().filter((e) => shuOf(e) !== 'hata' && shuOf(e) !== 'kyujo').sort((p, q) => parseDate(p.date) - parseDate(q.date))) {
       const t = parseDate(e.date).getTime();
       let at = null;
       for (const r of rows) if (r.d.getTime() <= t) at = r;
       const kw = 13, kh = 16, kx = x(t);
       let ky = y(at.v) - 22;
-      const butsukaru = (yy) => okiba.some((p) => Math.abs(p[0] - kx) < kw + 1 && Math.abs(p[1] - yy) < kh + 1)
+      const ew = shuOf(e) === 'shido' ? 18 : kw;   // 扇子は横に広い
+      const butsukaru = (yy) => okiba.some((p) => Math.abs(p[0] - kx) < (ew + p[2]) / 2 + 1 && Math.abs(p[1] - yy) < kh + 1)
         || tsubu.some((p) => Math.abs(p[0] - kx) < kw / 2 + 6 && p[1] > yy - 6 && p[1] < yy + kh + 6);
       for (let g = 0; g < 30 && butsukaru(ky); g++) ky -= 6;
-      okiba.push([kx, ky]);
+      okiba.push([kx, ky, ew]);
       if (ky + kh + 1 < y(at.v) - 4) svg.appendChild(s('line', { x1: kx, x2: kx, y1: ky + kh + 1, y2: y(at.v) - 4, class: 'ev-pole' }));
-      if (medalOf(e)) { svg.appendChild(s('text', { x: kx, y: ky + kh, 'text-anchor': 'middle', class: 'ev-cup' }, medalOf(e))); continue; }
-      if (!komaOf(e)) { svg.appendChild(hata(s, kx, ky, kh, gakuIro(t)[1])); continue; }
-      svg.appendChild(s('path', { class: 'ev-koma',
-        d: 'M' + kx + ' ' + ky + ' L' + (kx + kw * 0.38) + ' ' + (ky + kh * 0.2) + ' L' + (kx + kw / 2) + ' ' + (ky + kh)
-          + ' L' + (kx - kw / 2) + ' ' + (ky + kh) + ' L' + (kx - kw * 0.38) + ' ' + (ky + kh * 0.2) + ' Z' }));
-      svg.appendChild(s('text', { x: kx, y: ky + kh - 3.5, 'text-anchor': 'middle', class: 'ev-moji' }, komaOf(e)));
+      svg.appendChild(shirushi(s, e, kx, ky, shuOf(e) === 'shido' ? 11 : kh, t, 'ev'));
     }
 
     const wrap = el('div', 'k-chart-wrap');
@@ -524,8 +564,45 @@ const KIROKU = {
   }
 
   /** 大会の印。入賞 (優勝・準優勝・3位) は 🏆、koma のある大会は金の駒、ほかは小旗 */
-  function medalOf(e) { return e.jun >= 1 && e.jun <= 3 ? '🏆' : null; }
-  function komaOf(e) { return e.koma; }
+  /** 印の種類 */
+  function shuOf(e) {
+    if (e.jun >= 1 && e.jun <= 3) return 'cup';
+    if (e.shu === 'shido' || e.shu === 'hajime' || e.shu === 'kyujo') return e.shu;
+    return e.koma ? 'koma' : 'hata';
+  }
+  /** 金の扇子 (指導対局)。棋士がもつ扇子。x は要 (かなめ) の横位置、y は上、h は高さ */
+  function sensu(mk, x, y, h) {
+    const g = mk('g', { class: 'sensu' });
+    const cx = x, cy = y + h, R = h, r = h * 0.3;
+    const pt = (a, rr) => [cx + rr * Math.cos(a), cy + rr * Math.sin(a)];
+    const a0 = -Math.PI * 0.86, a1 = -Math.PI * 0.14;
+    const [ox0, oy0] = pt(a0, R), [ox1, oy1] = pt(a1, R), [ix1, iy1] = pt(a1, r), [ix0, iy0] = pt(a0, r);
+    g.appendChild(mk('path', { d: 'M' + ox0 + ' ' + oy0 + ' A' + R + ' ' + R + ' 0 0 1 ' + ox1 + ' ' + oy1 + ' L' + ix1 + ' ' + iy1
+      + ' A' + r + ' ' + r + ' 0 0 0 ' + ix0 + ' ' + iy0 + ' Z', fill: '#e8cd85', stroke: '#a8873e', 'stroke-width': Math.max(.8, h / 26), 'stroke-linejoin': 'round' }));
+    for (let i = 1; i < 6; i++) {                       // 骨
+      const a = a0 + (a1 - a0) * i / 6, [p1x, p1y] = pt(a, r), [p2x, p2y] = pt(a, R);
+      g.appendChild(mk('line', { x1: p1x, y1: p1y, x2: p2x, y2: p2y, stroke: '#b8964c', 'stroke-width': Math.max(.5, h / 40) }));
+    }
+    const [hx0, hy0] = pt(a0, r), [hx1, hy1] = pt(a1, r);   // 親骨と要
+    g.appendChild(mk('path', { d: 'M' + hx0 + ' ' + hy0 + ' L' + cx + ' ' + cy + ' L' + hx1 + ' ' + hy1, fill: 'none', stroke: '#6b4f1d', 'stroke-width': Math.max(1, h / 18), 'stroke-linejoin': 'round' }));
+    g.appendChild(mk('circle', { cx: cx, cy: cy, r: Math.max(1, h / 14), fill: '#6b4f1d' }));
+    return g;
+  }
+  /** 印をひとつ描く。x は印のまん中、y は上、h は高さ。t はその日 (学年の色に使う) */
+  function shirushi(mk, e, x, y, h, t, cls) {
+    const k = shuOf(e);
+    if (k === 'cup' || k === 'hajime') return mk('text', { x: x, y: y + h * 0.92, 'text-anchor': 'middle', class: cls + '-cup' }, k === 'cup' ? '🏆' : '🌱');
+    if (k === 'shido') return sensu(mk, x, y + h * 0.15, h * 0.85);
+    if (k === 'hata') return hata(mk, x, y, h, gakuIro(t)[1]);
+    if (k === 'kyujo') return hata(mk, x, y, h, '#c9c2b4');
+    const g = mk('g');
+    const kw = h * 0.8;
+    g.appendChild(mk('path', { class: cls + '-koma',
+      d: 'M' + x + ' ' + y + ' L' + (x + kw * 0.38) + ' ' + (y + h * 0.2) + ' L' + (x + kw / 2) + ' ' + (y + h)
+        + ' L' + (x - kw / 2) + ' ' + (y + h) + ' L' + (x - kw * 0.38) + ' ' + (y + h * 0.2) + ' Z' }));
+    g.appendChild(mk('text', { x: x, y: y + h - h * 0.23, 'text-anchor': 'middle', class: cls + '-moji' }, e.koma));
+    return g;
+  }
   /** 小旗 (出場した大会)。x, y は旗のいちばん上、h は高さ。旗の色はその日の学年の色 */
   function hata(mk, x, y, h, iro) {
     const g = mk('g', { class: 'hata' });
@@ -654,12 +731,12 @@ const KIROKU = {
     // 近い日の大会どうしもぶつからないよう、上へずらし、線まで点線でつなぐ
     const evs = (KIROKU.dekigoto || []).filter((e) => rows.some((r) => r.d.getTime() <= parseDate(e.date).getTime()))
       .sort((p, q) => parseDate(p.date) - parseDate(q.date));
-    const nameW = (e) => Math.max(e.name.length * 13.5, 40) + 12;
+    const nameW = (e) => Math.max(e.name.length * 11.5, 34) + 8;
     const evX = (e) => Math.max(xOfDate(parseDate(e.date).getTime()), AXIS + nameW(e) / 2 + 4);
     // 階段の字がある所: 級ごとに [左, 右, 上]
     const kaidan = rows.map((r, i) => [xs[i] - 120, xs[i] + segW(r) + (r.ima ? 40 : 0), y(r) - 32]);
     const placedEv = [];
-    const kh = 30, kw = 24;
+    const kh = 22, kw = 18;   // 大会が多いので、印と字は小さめ (積みあがりすぎないように)
     for (const e of evs) {
       const t = parseDate(e.date).getTime();
       let at = null;
@@ -671,29 +748,19 @@ const KIROKU = {
       for (const k of kaidan) if (k[0] < xb && k[1] > xa) base = Math.min(base, k[2]);
       let ky = base - kh - 2;
       // 前の大会の字とぶつかるなら、上へずらす
-      for (let guard = 0; guard < 60; guard++) {
-        const top = ky - 36, bottom = ky + kh;
+      for (let guard = 0; guard < 80; guard++) {
+        const top = ky - 28, bottom = ky + kh;
         if (!placedEv.some((p) => p.xa < xb && p.xb > xa && p.top < bottom + 4 && p.bottom > top - 4)) break;
-        ky -= 8;
+        ky -= 6;
       }
-      placedEv.push({ xa: xa, xb: xb, top: ky - 36, bottom: ky + kh });
+      placedEv.push({ xa: xa, xb: xb, top: ky - 28, bottom: ky + kh });
       const g = s('g', { class: 'mi-ev' });
       const kx = mx;
       if (ky + kh + 2 < my - 19) g.appendChild(s('line', { x1: mx, x2: mx, y1: ky + kh + 2, y2: my - 19, class: 'mi-ev-pole' }));
-      if (medalOf(e)) {
-        g.appendChild(s('text', { x: kx, y: ky + kh - 2, 'text-anchor': 'middle', class: 'mi-ev-cup' }, medalOf(e)));
-      } else if (!komaOf(e)) {
-        g.appendChild(hata(s, kx, ky + 2, kh - 2, gakuIro(t)[1]));
-      } else {
-        // 将棋の駒の形 (五角形)
-        g.appendChild(s('path', { class: 'mi-ev-koma',
-          d: 'M' + kx + ' ' + ky + ' L' + (kx + kw * 0.38) + ' ' + (ky + kh * 0.2) + ' L' + (kx + kw / 2) + ' ' + (ky + kh)
-            + ' L' + (kx - kw / 2) + ' ' + (ky + kh) + ' L' + (kx - kw * 0.38) + ' ' + (ky + kh * 0.2) + ' Z' }));
-        g.appendChild(s('text', { x: kx, y: ky + kh - 7, 'text-anchor': 'middle', class: 'mi-ev-moji' }, komaOf(e)));
-      }
+      g.appendChild(shirushi(s, e, kx, ky, kh, t, 'mi-ev'));
       // 字は印の上に、大会の名前 → 日付 の順で積む (横に置くと、どの印の日付か分かりにくい)
-      g.appendChild(s('text', { x: tx, y: ky - 21, 'text-anchor': 'middle', class: 'mi-ev-name' }, e.name));
-      g.appendChild(s('text', { x: tx, y: ky - 6, 'text-anchor': 'middle', class: 'mi-ev-kekka' },
+      g.appendChild(s('text', { x: tx, y: ky - 16, 'text-anchor': 'middle', class: 'mi-ev-name' }, e.name));
+      g.appendChild(s('text', { x: tx, y: ky - 4, 'text-anchor': 'middle', class: 'mi-ev-kekka' },
         (parseDate(e.date).getMonth() + 1) + '/' + parseDate(e.date).getDate()));
       svg.appendChild(g);
     }
@@ -765,15 +832,29 @@ const KIROKU = {
     const wrap = el('div', 'michi-wrap');
     wrap.id = 'ima';
     const box = el('div', 'michi-box');
+    // 大会の印が上にあふれたら、そのぶん絵ぜんたいを下げて、高さをふやす
+    const ue = Math.max(0, 60 - Math.min.apply(null, [999].concat(placedEv.map((p) => p.top))));
+    if (ue) {
+      const root = s('g', { transform: 'translate(0,' + ue + ')' });
+      while (svg.firstChild) root.appendChild(svg.firstChild);
+      svg.appendChild(root);
+      svg.setAttribute('height', H + ue);
+      svg.setAttribute('viewBox', '0 0 ' + W + ' ' + (H + ue));
+      // 学年の帯は上の空きにものばす
+      for (const r of root.querySelectorAll(':scope > rect')) { r.setAttribute('y', -ue); r.setAttribute('height', H + ue); }
+      for (const l of root.querySelectorAll(':scope > line.mi-sakai')) { l.setAttribute('y1', -ue); }
+      // 学年の名前は、いちばん上にのこす
+      for (const tx of root.querySelectorAll(':scope > text.mi-nen, :scope > text.mi-sum')) tx.setAttribute('y', +tx.getAttribute('y') - ue);
+    }
     const sc = el('div', 'michi-scroll');
     sc.appendChild(svg);
     box.appendChild(sc);
     // 左の目盛り。すべらせても動かないよう、上に重ねる
-    const ax = s('svg', { width: AXIS, height: H, class: 'michi-axis', 'aria-hidden': 'true' });
+    const ax = s('svg', { width: AXIS, height: H + ue, class: 'michi-axis', 'aria-hidden': 'true' });
     const rankOf = (k) => { const v = k >= 0 ? k + 1 : k; return rankName(v); };
     const imaIro = gakuIro(rows[rows.length - 1].d.getTime())[1];
     for (let k = lo; k <= hi; k++) {
-      const t = s('text', { x: AXIS - 6, y: TOP + (hi - k) * ROW_H + 3.5, 'text-anchor': 'end',
+      const t = s('text', { x: AXIS - 6, y: ue + TOP + (hi - k) * ROW_H + 3.5, 'text-anchor': 'end',
         class: 'mi-ax' + (k === ima ? ' is-ima' : k === hi ? ' is-tsugi' : '') }, rankOf(k));
       if (k === ima || k === hi) t.setAttribute('fill', imaIro);
       ax.appendChild(t);
