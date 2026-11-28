@@ -230,6 +230,7 @@ const KIROKU = {
     { date: '2026-02-22', name: '支部交流戦', kekka: '準優勝', jun: 2 },
     { date: '2026-03-08', name: '四日市記念公演', kekka: '出場' },
     { date: '2026-03-21', name: 'ちゅうでんこども将棋', kekka: '出場' },
+    { date: '2026-03-29', name: '詰将棋選手権', kekka: '3位', jun: 3 },
     { date: '2026-04-04', name: '柵木さん', kekka: '指導対局', shu: 'shido' },
     { date: '2026-06-07', name: '倉敷王将戦 高学年', kekka: '出場' },
     { date: '2026-06-13', name: '将棋フェス 中級者', kekka: '優勝', jun: 1 },  // 令和8年6月13日 (4年生)
@@ -239,6 +240,7 @@ const KIROKU = {
     { date: '2026-08-10', name: '関西将棋会館道場', kekka: '出場' },
     { date: '2026-10-31', name: 'テーブルマーク東海', kekka: 'ベスト16' },
     { date: '2026-11-08', name: 'ペコちゃんこども将棋塾', kekka: '出場' },
+    { date: '2026-11-23', name: '詰将棋選手権', kekka: '3位', jun: 3 },
   ],
   rows: [
     // { date: '2024-04-14', rank: '15級', where: '〇〇将棋教室', memo: 'はじめての級' },
@@ -567,7 +569,8 @@ const KIROKU = {
     });
     // いまの級の名前
     const last = rows[rows.length - 1];
-    const lab = s('text', { x: x(last.d.getTime()) - 8, y: y(last.v) - 8, 'text-anchor': 'end', class: 'ima-t', fill: imaIro }, 'いま ' + last.rank);
+    const lab = s('text', { x: x(last.d.getTime()) - 16,   // すぐ右に大会の印が来ることがあるので、少しはなす
+      y: y(last.v) - 8, 'text-anchor': 'end', class: 'ima-t', fill: imaIro }, 'いま ' + last.rank);
     svg.appendChild(lab);
 
     wrap.appendChild(svg);
