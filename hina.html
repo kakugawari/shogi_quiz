@@ -435,8 +435,9 @@ const KIROKU = {
         else if (k === 'shido') {
           const NS = 'http://www.w3.org/2000/svg';
           const mk = (tag, at) => { const n = document.createElementNS(NS, tag); for (const q in at) n.setAttribute(q, at[q]); return n; };
-          const sv = mk('svg', { viewBox: '0 0 34 30', width: 30, height: 30, class: 'k-sensu' });
-          sv.appendChild(sensu(mk, 17, 2, 26));
+          // 扇子は横に広い (はば ≒ 高さの 1.8 倍) ので、絵のはばをそのぶんとる
+          const sv = mk('svg', { viewBox: '0 0 50 30', width: 30, height: 18, class: 'k-sensu' });   // はば 30 はほかの印 (🏆・小旗) とそろえる
+          sv.appendChild(sensu(mk, 25, 2, 26));
           li.appendChild(sv);
         } else {
           const h = el('span', 'k-hata');
